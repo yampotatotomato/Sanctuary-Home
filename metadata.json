@@ -1,0 +1,6 @@
+{
+  "name": "Church Sanctuary",
+  "description": "An offline-first church companion app with public-domain Scripture reader (KJV, WEB, ASV, BBE), pastoral announcements, devotions, sermon audio player, prayer groups, and staff companion portal.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
