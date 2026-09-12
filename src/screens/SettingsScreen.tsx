@@ -2,18 +2,18 @@ import React from 'react';
 import { useSanctuary } from '../context/SanctuaryContext';
 import { ThemePalette } from '../types';
 import {
-  Settings,
   Bell,
-  Palette,
   Moon,
   Sun,
   ShieldCheck,
   RefreshCw,
-  Code2,
   Info,
   ExternalLink,
   BookOpen,
   Sparkles,
+  ChevronRight,
+  Database,
+  Check,
 } from 'lucide-react';
 
 export const SettingsScreen: React.FC = () => {
@@ -23,232 +23,270 @@ export const SettingsScreen: React.FC = () => {
     isDarkMode,
     setIsDarkMode,
     resetOnboarding,
-    setIsFlutterInspectorOpen,
     bookmarks,
     journalEntries,
     announcements,
+    dailyVerseReminder,
+    setDailyVerseReminder,
+    devotionalReminder,
+    setDevotionalReminder,
+    triggerBanner,
   } = useSanctuary();
 
-  const palettes: { id: ThemePalette; name: string; desc: string; sampleHex: string }[] = [
-    {
-      id: 'navy',
-      name: 'Grace Sanctuary Navy',
-      desc: 'Deep naval sapphire & warm gold',
-      sampleHex: 'bg-blue-900 border-amber-400',
-    },
-    {
-      id: 'gold',
-      name: 'Heavenly Gold',
-      desc: 'Warm imperial gold & rich parchment',
-      sampleHex: 'bg-amber-600 border-amber-200',
-    },
-    {
-      id: 'olive',
-      name: 'Olive Peace',
-      desc: 'Serene biblical olive & sage',
-      sampleHex: 'bg-lime-800 border-lime-300',
-    },
-    {
-      id: 'amethyst',
-      name: 'Royal Amethyst',
-      desc: 'Imperial purple & soft lavender',
-      sampleHex: 'bg-purple-900 border-purple-300',
-    },
+  const palettes: { id: ThemePalette; name: string; sampleHex: string }[] = [
+    { id: 'gold', name: 'Sanctuary Gold', sampleHex: 'bg-amber-500' },
+    { id: 'navy', name: 'Sapphire Navy', sampleHex: 'bg-blue-600' },
+    { id: 'olive', name: 'Olive Peace', sampleHex: 'bg-emerald-600' },
+    { id: 'amethyst', name: 'Royal Amethyst', sampleHex: 'bg-purple-600' },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-300">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
+    <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-6 animate-in fade-in duration-200">
+      {/* Apple HIG Large Title */}
+      <div className="flex items-center justify-between pb-2">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            <Settings className="w-4 h-4" />
-            <span>Preferences & Data</span>
-          </div>
-          <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-100 mt-1">
-            Application Settings
-          </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Configure offline cache, daily reminders, display palette, and licensing.
-          </p>
+          <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+            Preferences
+          </span>
+          <h1 className="text-[34px] font-bold tracking-tight text-[#1C1C1E] dark:text-white leading-tight">
+            Settings
+          </h1>
         </div>
 
         <button
-          onClick={resetOnboarding}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-semibold text-stone-700 dark:text-stone-300 transition"
+          onClick={() => {
+            resetOnboarding();
+            triggerBanner('Welcome Tour', 'Welcome guide restarted.', 'info');
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-[13px] font-medium text-[#1C1C1E] dark:text-white hover:bg-black/[0.08] dark:hover:bg-white/[0.12] active:scale-95 transition"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Replay Welcome Tour</span>
+          <RefreshCw className="w-3.5 h-3.5 text-[#8E8E93]" />
+          <span>Tour</span>
         </button>
       </div>
 
-      {/* 1. Notifications & Spiritual Alarms */}
-      <section className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 space-y-4 shadow-sm">
-        <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-amber-600" />
-          <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
-            Spiritual Rhythms & Reminders
-          </h3>
+      {/* Group 1: Spiritual Rhythms & Notifications (iOS Inset Grouped Table) */}
+      <div className="space-y-1.5">
+        <span className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider px-3">
+          Spiritual Rhythms & Alerts
+        </span>
+        <div className="ios-card divide-y divide-black/[0.06] dark:divide-white/[0.08] overflow-hidden">
+          {/* Morning Verse */}
+          <div className="p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-[7px] bg-amber-500 text-white flex items-center justify-center">
+                <Sun className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-[15px] font-medium text-[#1C1C1E] dark:text-white leading-tight">
+                  Morning Verse of the Day
+                </h4>
+                <p className="text-[12px] text-[#8E8E93] mt-0.5">
+                  Daily meditation at 07:00 AM
+                </p>
+              </div>
+            </div>
+            {/* iOS Switch */}
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={dailyVerseReminder}
+                onChange={(e) => setDailyVerseReminder(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-[#E5E5EA] dark:bg-[#39393D] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#34C759]"></div>
+            </label>
+          </div>
+
+          {/* Twilight Devotional */}
+          <div className="p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-[7px] bg-indigo-500 text-white flex items-center justify-center">
+                <Moon className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-[15px] font-medium text-[#1C1C1E] dark:text-white leading-tight">
+                  Twilight Devotional Reminder
+                </h4>
+                <p className="text-[12px] text-[#8E8E93] mt-0.5">
+                  Evening prayer alert at 08:30 PM
+                </p>
+              </div>
+            </div>
+            {/* iOS Switch */}
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={devotionalReminder}
+                onChange={(e) => setDevotionalReminder(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-[#E5E5EA] dark:bg-[#39393D] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#34C759]"></div>
+            </label>
+          </div>
+
+          {/* Pastoral Broadcasts */}
+          <div className="p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-[7px] bg-red-500 text-white flex items-center justify-center">
+                <Bell className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-[15px] font-medium text-[#1C1C1E] dark:text-white leading-tight">
+                  Pastoral Broadcast Notices
+                </h4>
+                <p className="text-[12px] text-[#8E8E93] mt-0.5">
+                  Immediate alerts for church notices
+                </p>
+              </div>
+            </div>
+            {/* iOS Switch */}
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                defaultChecked
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-[#E5E5EA] dark:bg-[#39393D] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#34C759]"></div>
+            </label>
+          </div>
         </div>
+      </div>
 
-        <div className="space-y-3 divide-y divide-stone-100 dark:divide-stone-800">
-          <div className="pt-2 flex items-center justify-between gap-4">
-            <div>
-              <h4 className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                Morning Verse of the Day
-              </h4>
-              <p className="text-xs text-stone-500 dark:text-stone-400">
-                Daily alert at 07:00 AM with public-domain Scripture.
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              defaultChecked
-              className="rounded text-amber-600 focus:ring-amber-500 w-5 h-5"
-            />
+      {/* Group 2: Display & Appearance */}
+      <div className="space-y-1.5">
+        <span className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider px-3">
+          Display & Appearance
+        </span>
+        <div className="ios-card divide-y divide-black/[0.06] dark:divide-white/[0.08] overflow-hidden">
+          {/* Dark Mode Row */}
+          <div className="p-4 flex items-center justify-between gap-4">
+            <span className="text-[15px] font-medium text-[#1C1C1E] dark:text-white">
+              Dark Appearance
+            </span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isDarkMode}
+                onChange={(e) => setIsDarkMode(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-[#E5E5EA] dark:bg-[#39393D] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#34C759]"></div>
+            </label>
           </div>
 
-          <div className="pt-3 flex items-center justify-between gap-4">
-            <div>
-              <h4 className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                Twilight Devotional Reminder
-              </h4>
-              <p className="text-xs text-stone-500 dark:text-stone-400">
-                Evening meditation alert at 08:30 PM with introspective prayer prompts.
-              </p>
+          {/* Accent Color Picker */}
+          <div className="p-4 space-y-2">
+            <span className="text-[13px] font-medium text-[#8E8E93] block">
+              Color Palette Accent
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {palettes.map((p) => {
+                const isSelected = themePalette === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setThemePalette(p.id)}
+                    className={`p-2.5 rounded-[12px] text-left border flex items-center gap-2.5 transition ${
+                      isSelected
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-black/[0.08] dark:border-white/[0.08] hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <div className={`w-3.5 h-3.5 rounded-full ${p.sampleHex}`} />
+                    <span className="text-[12px] font-semibold text-[#1C1C1E] dark:text-white truncate">
+                      {p.name}
+                    </span>
+                    {isSelected && <Check className="w-3.5 h-3.5 ml-auto text-amber-600 dark:text-amber-400" />}
+                  </button>
+                );
+              })}
             </div>
-            <input
-              type="checkbox"
-              defaultChecked
-              className="rounded text-amber-600 focus:ring-amber-500 w-5 h-5"
-            />
-          </div>
-
-          <div className="pt-3 flex items-center justify-between gap-4">
-            <div>
-              <h4 className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                Pastoral Broadcast Notifications
-              </h4>
-              <p className="text-xs text-stone-500 dark:text-stone-400">
-                Immediate alerts whenever senior pastors post emergency notices or service updates.
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              defaultChecked
-              className="rounded text-amber-600 focus:ring-amber-500 w-5 h-5"
-            />
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* 2. Theme & Visual Palettes */}
-      <section className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Palette className="w-5 h-5 text-amber-600" />
-            <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
-              Theming & Display
+      {/* Group 3: Local Cache & Storage Metrics */}
+      <div className="space-y-1.5">
+        <span className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider px-3">
+          Storage & Offline Cache
+        </span>
+        <div className="ios-card divide-y divide-black/[0.06] dark:divide-white/[0.08] overflow-hidden">
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-[7px] bg-emerald-500 text-white flex items-center justify-center">
+                <Database className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[15px] font-medium text-[#1C1C1E] dark:text-white block">
+                  Local Database
+                </span>
+                <span className="text-[12px] text-[#8E8E93]">
+                  All Scripture & media cached locally
+                </span>
+              </div>
+            </div>
+            <span className="text-[12px] font-semibold font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full">
+              100% Offline
+            </span>
+          </div>
+
+          <div className="p-4 grid grid-cols-3 gap-2 text-center">
+            <div className="p-2.5 rounded-[10px] bg-black/[0.02] dark:bg-white/[0.03]">
+              <div className="text-[19px] font-bold text-[#1C1C1E] dark:text-white">
+                {bookmarks.length}
+              </div>
+              <div className="text-[10px] text-[#8E8E93] uppercase font-semibold">Bookmarks</div>
+            </div>
+            <div className="p-2.5 rounded-[10px] bg-black/[0.02] dark:bg-white/[0.03]">
+              <div className="text-[19px] font-bold text-[#1C1C1E] dark:text-white">
+                {journalEntries.length}
+              </div>
+              <div className="text-[10px] text-[#8E8E93] uppercase font-semibold">Journals</div>
+            </div>
+            <div className="p-2.5 rounded-[10px] bg-black/[0.02] dark:bg-white/[0.03]">
+              <div className="text-[19px] font-bold text-[#1C1C1E] dark:text-white">
+                {announcements.length}
+              </div>
+              <div className="text-[10px] text-[#8E8E93] uppercase font-semibold">Notices</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Group 4: Licensing & Public-Domain Guarantee */}
+      <div className="space-y-1.5">
+        <span className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider px-3">
+          About & Licensing
+        </span>
+        <div className="ios-card p-4 space-y-3">
+          <div className="flex items-center gap-2.5 text-[#1C1C1E] dark:text-white">
+            <ShieldCheck className="w-5 h-5 text-amber-500" />
+            <h3 className="text-[15px] font-semibold">
+              Public-Domain & Open-Source Guarantee
             </h3>
           </div>
 
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700 text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
-          >
-            {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-            <span>{isDarkMode ? 'Light' : 'Dark'}</span>
-          </button>
-        </div>
+          <p className="text-[13px] text-[#8E8E93] leading-relaxed">
+            Every Scripture translation, font, icon set, and audio recording bundled in Church Sanctuary is guaranteed 100% free, open-source, or public-domain under CC0, MIT, or BSD licenses. No commercial subscriptions or paywalls.
+          </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {palettes.map((p) => {
-            const isSelected = themePalette === p.id;
-            return (
-              <button
-                key={p.id}
-                onClick={() => setThemePalette(p.id)}
-                className={`p-3.5 rounded-2xl text-left border flex items-center gap-3 transition ${
-                  isSelected
-                    ? 'border-amber-600 bg-amber-500/10 dark:bg-amber-950/30'
-                    : 'border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800'
-                }`}
-              >
-                <div
-                  className={`w-6 h-6 rounded-full border-2 shadow-sm flex-shrink-0 ${p.sampleHex}`}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold text-xs text-stone-900 dark:text-stone-100 flex items-center justify-between">
-                    <span>{p.name}</span>
-                    {isSelected && (
-                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate mt-0.5">
-                    {p.desc}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 3. Offline Data & Storage Metrics */}
-      <section className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
-            Offline Storage & Cache
-          </h3>
-          <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-300/40">
-            ● 100% Offline Ready
-          </span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-800">
-            <div className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100">
-              {bookmarks.length}
+          <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08] space-y-1 text-[12px] text-[#8E8E93]">
+            <div className="flex justify-between py-0.5">
+              <span>Scripture Translations</span>
+              <span className="font-medium text-[#1C1C1E] dark:text-white">KJV, WEB, ASV, BBE</span>
             </div>
-            <div className="text-[10px] text-stone-400 uppercase font-semibold">Bookmarks</div>
-          </div>
-          <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-800">
-            <div className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100">
-              {journalEntries.length}
+            <div className="flex justify-between py-0.5">
+              <span>Interface Guidelines</span>
+              <span className="font-medium text-[#1C1C1E] dark:text-white">Apple HIG Standards</span>
             </div>
-            <div className="text-[10px] text-stone-400 uppercase font-semibold">Journals</div>
-          </div>
-          <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-800">
-            <div className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100">
-              {announcements.length}
+            <div className="flex justify-between py-0.5">
+              <span>Application Version</span>
+              <span className="font-medium text-[#1C1C1E] dark:text-white">2.4.0 (Offline Ready)</span>
             </div>
-            <div className="text-[10px] text-stone-400 uppercase font-semibold">Notices</div>
           </div>
         </div>
-      </section>
-
-      {/* 4. Licensing & Resource Constraints Compliance */}
-      <section className="rounded-3xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 p-6 space-y-3">
-        <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
-          <ShieldCheck className="w-5 h-5 text-amber-600" />
-          <h3 className="font-serif font-bold text-base">
-            Licensing & Public-Domain Guarantee
-          </h3>
-        </div>
-
-        <p className="text-xs text-amber-950/80 dark:text-amber-200/80 leading-relaxed">
-          Every component, font, icon set, audio track, and scripture passage bundled in Church Sanctuary is guaranteed 100% free, open-source, or public-domain under MIT, BSD, Apache-2.0, or CC0 licenses.
-        </p>
-
-        <ul className="text-xs text-amber-900/90 dark:text-amber-300/90 space-y-1 list-disc list-inside font-medium">
-          <li><strong>Bible Translations:</strong> King James Version (1611), World English Bible (WEB), American Standard Version (1901), Bible in Basic English (1949/1964) — zero commercial restrictions.</li>
-          <li><strong>Typography:</strong> Google Fonts (Open Font License).</li>
-          <li><strong>Audio:</strong> CC0 / Public Domain ambient pastoral recordings.</li>
-          <li><strong>No API subscriptions or paywalls:</strong> Built to serve the Church in perpetuity.</li>
-        </ul>
-      </section>
+      </div>
     </div>
   );
 };

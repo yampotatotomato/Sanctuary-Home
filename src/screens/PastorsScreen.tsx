@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { useSanctuary } from '../context/SanctuaryContext';
 import { SAMPLE_SERMONS } from '../data/seedData';
-import { Sermon } from '../types';
 import {
   Headphones,
   MessageCircle,
   Play,
-  Send,
-  User,
-  Shield,
+  ArrowUp,
   Clock,
   BookOpen,
   Filter,
-  Sparkles,
+  Shield,
+  Volume2,
+  Library,
+  ChevronRight,
 } from 'lucide-react';
 
 export const PastorsScreen: React.FC = () => {
@@ -21,6 +21,7 @@ export const PastorsScreen: React.FC = () => {
     chatMessages,
     sendPastorMessage,
     jumpToScripture,
+    navigateTo,
   } = useSanctuary();
 
   const [activeTab, setActiveTab] = useState<'sermons' | 'counseling'>('sermons');
@@ -52,63 +53,77 @@ export const PastorsScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 animate-in fade-in duration-300">
-      {/* Top Header & Section Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
+    <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-5 animate-in fade-in duration-200">
+      {/* Apple HIG Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-2">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            <Headphones className="w-4 h-4" />
-            <span>Pastoral Ministry</span>
-          </div>
-          <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-100 mt-1">
-            Teachings & Pastoral Care
-          </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Expository sermon library and direct, confidential pastoral messenger.
-          </p>
+          <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wider block">
+            Ministry
+          </span>
+          <h1 className="text-[34px] font-bold tracking-tight text-[#1C1C1E] dark:text-white leading-tight">
+            Pastoral Care
+          </h1>
         </div>
 
-        {/* Tab Pills: Sermons vs Counseling */}
-        <div className="flex bg-stone-100 dark:bg-stone-800 p-1 rounded-2xl border border-stone-200 dark:border-stone-700">
+        {/* iOS Segmented Bar for Sermons vs Counseling */}
+        <div className="ios-segmented flex p-0.5 rounded-[9px] w-full sm:w-auto">
           <button
             onClick={() => setActiveTab('sermons')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            className={`flex-1 sm:flex-initial px-4 py-1 rounded-[7px] text-[12px] font-semibold transition ${
               activeTab === 'sermons'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white shadow-xs'
+                : 'text-[#8E8E93]'
             }`}
           >
-            <Headphones className="w-4 h-4" />
-            <span>Sermon Archive</span>
+            Sermon Archive
           </button>
           <button
             onClick={() => setActiveTab('counseling')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            className={`flex-1 sm:flex-initial px-4 py-1 rounded-[7px] text-[12px] font-semibold transition ${
               activeTab === 'counseling'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white shadow-xs'
+                : 'text-[#8E8E93]'
             }`}
           >
-            <MessageCircle className="w-4 h-4" />
-            <span>Pastoral Chat</span>
+            Pastoral Chat
           </button>
         </div>
       </div>
 
-      {/* 1. SERMONS ARCHIVE VIEW */}
+      {/* 1. SERMON ARCHIVE VIEW (Apple Podcasts Style) */}
       {activeTab === 'sermons' && (
-        <div className="space-y-6">
-          {/* Category Filter Chips */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-            <Filter className="w-3.5 h-3.5 text-stone-400 flex-shrink-0" />
+        <div className="space-y-4">
+          {/* Link to Full Sermon Library */}
+          <button
+            onClick={() => navigateTo('sermons')}
+            className="w-full ios-card p-3.5 flex items-center justify-between border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition active:scale-99 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                <Library className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[14px] font-semibold text-[#1C1C1E] dark:text-white block leading-tight">
+                  Open Expository Sermon Library
+                </span>
+                <span className="text-[12px] text-[#8E8E93]">
+                  Browse markdown notes, filter by pastor, theme & date
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-amber-500" />
+          </button>
+
+          {/* Category Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar select-none">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${
+                className={`px-3 py-1 rounded-full text-[12px] font-semibold whitespace-nowrap transition active:scale-95 ${
                   selectedCategory === cat
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'bg-black/[0.04] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-white hover:bg-black/[0.08]'
                 }`}
               >
                 {cat}
@@ -116,51 +131,55 @@ export const PastorsScreen: React.FC = () => {
             ))}
           </div>
 
-          {/* Sermons Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Podcasts Episode List */}
+          <div className="space-y-3">
             {filteredSermons.map((sermon) => {
               const minutes = Math.floor(sermon.durationSec / 60);
 
               return (
                 <div
                   key={sermon.id}
-                  className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-5 shadow-sm flex flex-col justify-between hover:border-amber-300 dark:hover:border-amber-900 transition group"
+                  className="ios-card p-4 space-y-3 hover:border-black/15 dark:hover:border-white/20 transition"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">
-                        {sermon.category}
-                      </span>
-                      <div className="flex items-center gap-1 text-[11px] font-mono text-stone-400">
-                        <Clock className="w-3 h-3" />
-                        <span>{minutes} min</span>
-                      </div>
+                  <div className="flex items-start gap-3.5">
+                    {/* Apple Podcasts Square Artwork */}
+                    <div className="w-16 h-16 rounded-[14px] bg-gradient-to-br from-amber-600 to-amber-700 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
+                      <Volume2 className="w-7 h-7" />
                     </div>
 
-                    <h4 className="font-serif font-bold text-base text-stone-900 dark:text-stone-100 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition">
-                      {sermon.title}
-                    </h4>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400">
+                          {sermon.category}
+                        </span>
+                        <span className="text-[11px] text-[#8E8E93]">
+                          {minutes} mins
+                        </span>
+                      </div>
 
-                    <p className="text-xs text-stone-500 dark:text-stone-400">
-                      {sermon.speaker} • <span className="italic">{sermon.series}</span>
-                    </p>
+                      <h3 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white mt-1 leading-snug">
+                        {sermon.title}
+                      </h3>
 
-                    <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed line-clamp-2 pt-1">
-                      {sermon.description}
-                    </p>
-
-                    <div className="pt-1">
-                      <button
-                        onClick={() => handleScriptureRef(sermon.scriptureRef)}
-                        className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
-                      >
-                        <BookOpen className="w-3 h-3" />
-                        <span>Passage: {sermon.scriptureRef}</span>
-                      </button>
+                      <p className="text-[12px] text-[#8E8E93] truncate mt-0.5">
+                        {sermon.speaker} • {sermon.series}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="mt-5 pt-3.5 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">
+                  <p className="text-[13px] text-[#3C3C43] dark:text-[#EBEBF5]/80 line-clamp-2 leading-relaxed">
+                    {sermon.description}
+                  </p>
+
+                  <div className="pt-2 border-t border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between">
+                    <button
+                      onClick={() => handleScriptureRef(sermon.scriptureRef)}
+                      className="text-[12px] font-semibold text-amber-600 dark:text-amber-400 hover:opacity-80 flex items-center gap-1"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>{sermon.scriptureRef}</span>
+                    </button>
+
                     <button
                       onClick={() =>
                         playAudio({
@@ -171,12 +190,11 @@ export const PastorsScreen: React.FC = () => {
                           durationSec: sermon.durationSec,
                         })
                       }
-                      className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-semibold shadow transition"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-[12px] font-semibold shadow-xs transition"
                     >
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Play Sermon</span>
+                      <Play className="w-3 h-3 fill-current ml-0.5" />
+                      <span>Play</span>
                     </button>
-                    <span className="text-[10px] text-stone-400 font-mono">CC0 Audio Track</span>
                   </div>
                 </div>
               );
@@ -185,88 +203,78 @@ export const PastorsScreen: React.FC = () => {
         </div>
       )}
 
-      {/* 2. PASTORAL COUNSELING CHAT VIEW */}
+      {/* 2. PASTORAL COUNSELING CHAT VIEW (Apple iMessage Style) */}
       {activeTab === 'counseling' && (
-        <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col h-[600px] overflow-hidden">
-          {/* Chat Header */}
-          <div className="p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-850 flex items-center justify-between">
+        <div className="ios-card overflow-hidden flex flex-col h-[580px] shadow-sm">
+          {/* iMessage Header */}
+          <div className="p-3.5 border-b border-black/[0.06] dark:border-white/[0.08] bg-black/[0.01] dark:bg-white/[0.02] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-700 text-white font-serif font-bold flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 rounded-full bg-amber-600 text-white font-semibold flex items-center justify-center text-[13px] shadow-xs">
                 TW
               </div>
               <div>
-                <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100">
+                <h4 className="font-semibold text-[14px] text-[#1C1C1E] dark:text-white leading-tight">
                   Rev. Dr. Thomas Wright
                 </h4>
-                <p className="text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Senior Pastor • Confidential Pastoral Counseling</span>
+                <p className="text-[11px] text-[#8E8E93] flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#34C759]" />
+                  <span>Confidential Pastoral Care</span>
                 </p>
               </div>
             </div>
 
-            <span className="text-[10px] font-mono px-2 py-1 rounded bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
-              Offline Cache
+            <span className="text-[11px] text-[#8E8E93] px-2 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.06]">
+              Encrypted
             </span>
           </div>
 
-          {/* Messages Thread */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4">
+          {/* Messages Thread (Apple iMessage bubbles) */}
+          <div className="flex-1 p-4 overflow-y-auto space-y-3 select-text">
             {chatMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2.5 max-w-[85%] ${
-                  msg.isFromUser ? 'ml-auto flex-row-reverse' : ''
+                className={`flex flex-col max-w-[80%] ${
+                  msg.isFromUser ? 'ml-auto items-end' : 'mr-auto items-start'
                 }`}
               >
-                {!msg.isFromUser && (
-                  <div className="w-8 h-8 rounded-full bg-blue-700 text-white text-xs font-serif font-bold flex items-center justify-center flex-shrink-0 shadow-sm">
-                    TW
-                  </div>
-                )}
-
                 <div
-                  className={`p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-sm ${
+                  className={`px-3.5 py-2.5 rounded-[18px] text-[14px] leading-relaxed shadow-2xs ${
                     msg.isFromUser
-                      ? 'bg-amber-600 text-white rounded-br-none'
-                      : 'bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-100 rounded-bl-none border border-stone-200/50 dark:border-stone-700'
+                      ? 'bg-amber-500 text-white rounded-br-[4px]'
+                      : 'bg-[#E9E9EB] dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white rounded-bl-[4px]'
                   }`}
                 >
                   <p>{msg.content}</p>
-                  <span
-                    className={`block text-[10px] mt-1.5 font-mono ${
-                      msg.isFromUser ? 'text-amber-200 text-right' : 'text-stone-400'
-                    }`}
-                  >
-                    {new Date(msg.timestamp).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
                 </div>
+                <span className="text-[10px] text-[#8E8E93] mt-1 px-1">
+                  {new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </span>
               </div>
             ))}
           </div>
 
-          {/* Message Input Box */}
+          {/* iMessage Pill Input Bar */}
           <form
             onSubmit={handleSendMessage}
-            className="p-3 bg-stone-50 dark:bg-stone-850 border-t border-stone-100 dark:border-stone-800 flex items-center gap-2"
+            className="p-3 border-t border-black/[0.06] dark:border-white/[0.08] bg-black/[0.02] dark:bg-white/[0.02] flex items-center gap-2"
           >
             <input
               type="text"
-              placeholder="Share a confidential question, prayer request, or note..."
+              placeholder="iMessage confidential note or prayer..."
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              className="flex-1 px-4 py-2.5 text-xs sm:text-sm bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="flex-1 px-4 py-2 text-[14px] bg-white dark:bg-[#2C2C2E] rounded-full border border-black/10 dark:border-white/10 text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
             />
             <button
               type="submit"
               disabled={!inputMessage.trim()}
-              className="p-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-40 text-white transition active:scale-95 shadow"
-              title="Send Message"
+              className="w-8 h-8 rounded-full bg-amber-500 disabled:opacity-30 text-white flex items-center justify-center transition active:scale-95 flex-shrink-0"
+              aria-label="Send"
             >
-              <Send className="w-4 h-4" />
+              <ArrowUp className="w-4 h-4" />
             </button>
           </form>
         </div>

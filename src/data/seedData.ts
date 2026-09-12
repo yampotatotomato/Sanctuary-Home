@@ -4,8 +4,10 @@ import {
   Devotional,
   JoinedGroupEntity,
   JournalEntity,
+  PastorEntity,
   PastorMessageEntity,
   Sermon,
+  SermonEntity,
   StaffAccount,
 } from '../types';
 
@@ -295,5 +297,173 @@ export const INITIAL_JOURNALS: JournalEntity[] = [
     scriptureTag: 'Psalms 23:2',
     gratitudePrompt: 'Grateful for the quiet morning prayer time and health for my family.',
     createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+  },
+];
+
+export const INITIAL_PASTORS: PastorEntity[] = [
+  {
+    id: 'pastor-wright',
+    name: 'Rev. Dr. Thomas Wright',
+    roleTitle: 'Senior Pastor',
+    bio: 'Serving the congregation for over 18 years with expository preaching and pastoral counseling rooted in historic Christian theology.',
+  },
+  {
+    id: 'pastor-jenkins',
+    name: 'Pastor Sarah Jenkins',
+    roleTitle: 'Associate & Family Pastor',
+    bio: 'Passionate about biblical parenting, flourishing marriages, and discipling the next generation in authentic discipleship.',
+  },
+  {
+    id: 'pastor-miller',
+    name: 'David Miller',
+    roleTitle: 'Worship & Creative Arts Director',
+    bio: 'Guiding the congregation in Christ-centered vocal and liturgical praise, rooted in the Psalms and classical Christian hymns.',
+  },
+  {
+    id: 'pastor-kim',
+    name: 'Hannah Kim',
+    roleTitle: 'Youth & Outreach Pastor',
+    bio: 'Mobilizing students and local evangelism teams to serve downtown shelters, university campuses, and youth small groups.',
+  },
+];
+
+export const INITIAL_SERMON_ENTITIES: SermonEntity[] = [
+  {
+    id: 'sermon-ent-1',
+    pastorId: 'pastor-wright',
+    title: 'Anchored in Unshakable Grace',
+    theme: 'Grace',
+    sermonDate: '2026-09-06',
+    scriptureRefs: ['Romans 8:28-39', 'Romans 8:31'],
+    audioUrl: 'track-sermon-1',
+    durationSec: 2145,
+    isPublished: true,
+    createdAt: '2026-09-06T10:00:00.000Z',
+    markdownContent: `## An Exposition of Romans 8:28-39
+
+> "What shall we then say to these things? If God be for us, who can be against us?" — Romans 8:31
+
+When the apostle Paul pens the climactic closing to the eighth chapter of Romans, he does not speak from an ivory tower of theoretical optimism. He writes with the scarred hands of a man who was stoned, shipwrecked, and imprisoned. Yet his tone is one of triumphant certainty.
+
+### 1. The Divine Promise of Sovereignty
+Paul begins with an unbreakable golden chain: *whom He foreknew, He also predestined to be conformed to the image of His Son*. Every tear, every trial, and every unanswered longing is held within the sovereign stewardship of our heavenly Father. 
+
+Notice key biblical truths from this passage:
+* **The Promise is Comprehensive:** All things work together for good, not just the pleasant things.
+* **The Good is Defined by God:** Spiritual conformity to Christ Jesus is far higher than temporary earthly ease.
+* **The Surety is Absolute:** Nothing in all creation can sever you from the love of God.
+
+### 2. The Five Rhetorical Inquiries
+Paul challenges every accusation that our adversary, Satan, or our troubled conscience might raise:
+1. *If God is for us, who can be against us?*
+2. *He that spared not His own Son, how shall He not with Him also freely give us all things?*
+3. *Who shall lay anything to the charge of God's elect?*
+4. *Who is he that condemneth?*
+5. *Who shall separate us from the love of Christ?*
+
+### 3. Practical Applications for the Week
+* Take 10 minutes every morning to read [Romans 8:38-39] aloud.
+* Replace anxious self-talk with the promises of Scripture when circumstances feel precarious.
+* Reach out to a brother or sister walking through grief with words of reassurance.`,
+  },
+  {
+    id: 'sermon-ent-2',
+    pastorId: 'pastor-wright',
+    title: 'Walking Through the Valley Without Fear',
+    theme: 'Faith',
+    sermonDate: '2026-08-30',
+    scriptureRefs: ['Psalms 23:1-6', 'John 10:11'],
+    audioUrl: 'track-sermon-2',
+    durationSec: 1860,
+    isPublished: true,
+    createdAt: '2026-08-30T10:00:00.000Z',
+    markdownContent: `## The Good Shepherd in Dark Valleys
+
+> "Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me." — Psalms 23:4
+
+David was a seasoned shepherd who understood the rugged Judean wilderness. In this beloved psalm, he does not promise the absence of valleys, but the steadfast companionship of the Great Shepherd through them.
+
+### Key Theological Insights
+* **The Valley is a Pathway, Not a Residence:** David says "walk *through*", not *pitch a tent in*. Valleys lead to higher summer pastures.
+* **Shadows Cannot Strike:** The shadow of a dog cannot bite; the shadow of a sword cannot wound; the shadow of death has had its sting extracted at Calvary!
+* **The Comfort of the Rod and Staff:**
+  * The **rod** protects against wolves and predators.
+  * The **staff** gently pulls wandering sheep back from sheer cliffs.
+
+### Personal Reflection
+Meditate on [John 10:11] this week: "I am the good shepherd: the good shepherd giveth his life for the sheep."`,
+  },
+  {
+    id: 'sermon-ent-3',
+    pastorId: 'pastor-jenkins',
+    title: 'Cultivating a Peaceful Home in a Chaotic Age',
+    theme: 'Family',
+    sermonDate: '2026-08-23',
+    scriptureRefs: ['Colossians 3:12-17', 'Ephesians 4:32'],
+    audioUrl: 'track-sermon-3',
+    durationSec: 1720,
+    isPublished: true,
+    createdAt: '2026-08-23T10:00:00.000Z',
+    markdownContent: `## Biblical Pillars for Christian Households
+
+Our homes ought to be an embassy of the Kingdom of Heaven—sanctuaries of grace and mutual forbearance where the peace of Christ rules our hearts.
+
+### The Wardrobe of the Believer
+Paul urges us to clothe ourselves with:
+* **Bowels of mercies** (tender compassionate affection)
+* **Kindness** in speech and gesture
+* **Humility** that considers others first
+* **Meekness** (strength harnessed under divine control)
+* **Longsuffering** with each other's weaknesses
+
+> "And above all these things put on charity, which is the bond of perfectness." — Colossians 3:14
+
+### Action Steps for Spouses & Parents
+1. Establish a 10-minute family prayer rhythm before bedtime.
+2. Practice immediate, ungrudging forgiveness when disagreements arise [Ephesians 4:32].
+3. Dedicate one evening each week as a screen-free Sabbath dinner.`,
+  },
+  {
+    id: 'sermon-ent-4',
+    pastorId: 'pastor-miller',
+    title: 'Praise as a Weapon of Spiritual Victory',
+    theme: 'Worship',
+    sermonDate: '2026-08-16',
+    scriptureRefs: ['Psalm 100:1-5', 'Acts 16:25'],
+    audioUrl: 'track-sermon-4',
+    durationSec: 1540,
+    isPublished: true,
+    createdAt: '2026-08-16T10:00:00.000Z',
+    markdownContent: `## Entering His Gates with Thanksgiving
+
+Worship is never merely emotional recreation; it is the spiritual posture of a soul declaring the goodness and majesty of Almighty God in the midst of adversity.
+
+### Biblical Precedent
+* When Paul and Silas were flogged and locked in stocks in the midnight dungeon of Philippi, they **sang hymns of praise to God** [Acts 16:25], and an earthquake shook the foundations of the prison!
+* Thanksgiving shifts our gaze from the magnitude of our problems to the infinitude of our God.
+
+> "Enter into his gates with thanksgiving, and into his courts with praise: be thankful unto him, and bless his name." — Psalm 100:4`,
+  },
+  {
+    id: 'sermon-ent-5',
+    pastorId: 'pastor-kim',
+    title: 'Courage to Stand in the Day of Battle',
+    theme: 'Youth',
+    sermonDate: '2026-08-09',
+    scriptureRefs: ['1 Corinthians 13:1-13', '1 Timothy 4:12'],
+    audioUrl: 'track-sermon-5',
+    durationSec: 1980,
+    isPublished: true,
+    createdAt: '2026-08-09T10:00:00.000Z',
+    markdownContent: `## An Uncompromising Faith for the Next Generation
+
+God does not call young believers to timidity or cultural conformity, but to be blazing beacons of biblical truth, holiness, and sacrificial love.
+
+### Three Markings of Biblical Courage
+1. **Moral Purity in a Permissive Society:** Standing for truth with gentleness and respect.
+2. **Love Without Hypocrisy:** Grounded in the enduring nature of Christian charity [1 Corinthians 13:4-8].
+3. **Daily Faithfulness in Small Decisions:** Honoring God in study, workplace ethics, and digital habits.
+
+> "Let no man despise thy youth; but be thou an example of the believers, in word, in conversation, in charity, in spirit, in faith, in purity." — 1 Timothy 4:12`,
   },
 ];

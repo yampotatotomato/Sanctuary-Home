@@ -10,9 +10,8 @@ import {
   HelpCircle,
   HeartHandshake,
   Sparkles,
-  Volume2,
-  Calendar,
   ChevronRight,
+  Play,
 } from 'lucide-react';
 
 export const DevotionScreen: React.FC = () => {
@@ -20,7 +19,6 @@ export const DevotionScreen: React.FC = () => {
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const devotional: Devotional = SAMPLE_DEVOTIONALS[selectedIdx] || SAMPLE_DEVOTIONALS[0];
 
-  // Helper to parse scripture reference string (e.g. 'Psalms 23:1' or 'Romans 8:31')
   const handleScriptureClick = (refStr: string) => {
     const parts = refStr.trim().split(' ');
     if (parts.length >= 2) {
@@ -33,32 +31,28 @@ export const DevotionScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-300">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
+    <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-6 animate-in fade-in duration-200">
+      {/* Apple HIG Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-2">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            <Sun className="w-4 h-4" />
-            <span>Daily Spiritual Rhythms</span>
-          </div>
-          <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-100 mt-1">
-            Devotional Reflections
-          </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Morning & evening meditations, spoken narration, and scripture deep-links.
-          </p>
+          <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wider block">
+            Spiritual Rhythms
+          </span>
+          <h1 className="text-[34px] font-bold tracking-tight text-[#1C1C1E] dark:text-white leading-tight">
+            Devotions
+          </h1>
         </div>
 
-        {/* Date Selector Tabs */}
-        <div className="flex bg-stone-100 dark:bg-stone-800 p-1 rounded-2xl border border-stone-200 dark:border-stone-700">
+        {/* Date Segmented Control */}
+        <div className="ios-segmented flex p-0.5 rounded-[9px] self-start sm:self-auto">
           {SAMPLE_DEVOTIONALS.map((d, idx) => (
             <button
               key={d.date}
               onClick={() => setSelectedIdx(idx)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+              className={`px-3 py-1 rounded-[7px] text-[12px] font-semibold transition ${
                 selectedIdx === idx
-                  ? 'bg-amber-600 text-white shadow-sm'
-                  : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white shadow-xs'
+                  : 'text-[#8E8E93]'
               }`}
             >
               {d.date}
@@ -67,130 +61,126 @@ export const DevotionScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* Devotional Hero Title & Audio Narration Card */}
-      <div className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 md:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2 flex-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">
-            {devotional.date}’s Focus
+      {/* Hero Devotional Card */}
+      <div className="ios-card p-5 sm:p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400">
+            {devotional.date} Daily Focus
           </span>
-          <h3 className="font-serif font-bold text-2xl sm:text-3xl text-stone-900 dark:text-stone-100 leading-snug">
-            {devotional.title}
-          </h3>
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-xs text-stone-500 dark:text-stone-400">Readings:</span>
-            {devotional.scriptureRefs.map((ref) => (
-              <button
-                key={ref}
-                onClick={() => handleScriptureClick(ref)}
-                className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-900/40 hover:bg-amber-100 transition flex items-center gap-1"
-                title={`Jump to ${ref} in Bible`}
-              >
-                <BookOpen className="w-3 h-3 text-amber-600" />
-                <span>{ref}</span>
-              </button>
-            ))}
-          </div>
+          <span className="text-[12px] text-[#8E8E93]">
+            {Math.floor(devotional.audioDurationSec / 60)} min meditation
+          </span>
         </div>
 
-        {/* Audio Narration Trigger */}
-        <div className="flex-shrink-0">
+        <h2 className="text-[22px] sm:text-[26px] font-bold text-[#1C1C1E] dark:text-white leading-tight">
+          {devotional.title}
+        </h2>
+
+        {/* Readings pill tags */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="text-[12px] text-[#8E8E93] mr-1">Passages:</span>
+          {devotional.scriptureRefs.map((ref) => (
+            <button
+              key={ref}
+              onClick={() => handleScriptureClick(ref)}
+              className="text-[12px] font-semibold px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-white hover:bg-black/[0.08] dark:hover:bg-white/[0.12] transition flex items-center gap-1 active:scale-95"
+            >
+              <BookOpen className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+              <span>{ref}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Spoken Narration Button */}
+        <div className="pt-2">
           <button
             onClick={() =>
               playAudio({
                 id: `dev-${devotional.date}`,
                 title: devotional.title,
-                subtitle: `Devotional Audio Narration • ${devotional.date}`,
+                subtitle: `Devotional Spoken Narration • ${devotional.date}`,
                 type: 'devotional',
                 durationSec: devotional.audioDurationSec,
               })
             }
-            className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-semibold text-xs shadow-md transition"
+            className="w-full py-3 rounded-[12px] bg-amber-500 hover:bg-amber-600 active:scale-98 text-white font-semibold text-[14px] flex items-center justify-center gap-2 shadow-xs transition"
           >
             <Headphones className="w-4 h-4" />
-            <span>Listen to Narration ({Math.floor(devotional.audioDurationSec / 60)}m)</span>
+            <span>Listen to Spoken Narration</span>
           </button>
         </div>
       </div>
 
-      {/* Morning & Evening Cards (Material 3 Cards) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Morning Reflection */}
-        <section className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-3">
-              <Sun className="w-5 h-5" />
-              <h4 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
-                Dawn Meditation
-              </h4>
+      {/* Reflections Inset Cards: Dawn & Twilight */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        {/* Dawn Meditation */}
+        <div className="ios-card p-5 space-y-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-[7px] bg-amber-500 text-white flex items-center justify-center">
+              <Sun className="w-4 h-4" />
             </div>
-            <p className="text-sm font-serif text-stone-700 dark:text-stone-300 leading-relaxed">
-              {devotional.morningReflection}
-            </p>
+            <h3 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white">
+              Dawn Meditation
+            </h3>
           </div>
+          <p className="text-[14px] font-reading text-[#3C3C43] dark:text-[#EBEBF5]/90 leading-relaxed">
+            {devotional.morningReflection}
+          </p>
+          <span className="text-[11px] text-[#8E8E93] block pt-1 italic">
+            Psalm 143:8
+          </span>
+        </div>
 
-          <div className="mt-6 pt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-stone-400">
-            <span>Morning Offering</span>
-            <span className="italic">Psalm 143:8</span>
-          </div>
-        </section>
-
-        {/* Evening Reflection */}
-        <section className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-3">
-              <Moon className="w-5 h-5" />
-              <h4 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
-                Twilight Examination
-              </h4>
+        {/* Twilight Examination */}
+        <div className="ios-card p-5 space-y-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-[7px] bg-indigo-500 text-white flex items-center justify-center">
+              <Moon className="w-4 h-4" />
             </div>
-            <p className="text-sm font-serif text-stone-700 dark:text-stone-300 leading-relaxed">
-              {devotional.eveningReflection}
-            </p>
+            <h3 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white">
+              Twilight Examination
+            </h3>
           </div>
-
-          <div className="mt-6 pt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-stone-400">
-            <span>Evening Rest</span>
-            <span className="italic">Psalm 4:8</span>
-          </div>
-        </section>
+          <p className="text-[14px] font-reading text-[#3C3C43] dark:text-[#EBEBF5]/90 leading-relaxed">
+            {devotional.eveningReflection}
+          </p>
+          <span className="text-[11px] text-[#8E8E93] block pt-1 italic">
+            Psalm 4:8
+          </span>
+        </div>
       </div>
 
-      {/* Introspective Questions */}
-      <section className="rounded-3xl bg-stone-50 dark:bg-stone-850 border border-stone-200 dark:border-stone-800 p-6 sm:p-8 space-y-4">
-        <div className="flex items-center gap-2 text-stone-900 dark:text-stone-100">
-          <HelpCircle className="w-5 h-5 text-amber-600" />
-          <h4 className="font-serif font-bold text-lg">Introspective Heart Questions</h4>
-        </div>
-        <p className="text-xs text-stone-500 dark:text-stone-400">
-          Take five quiet moments to meditate on these prompts before the Lord:
-        </p>
-
-        <div className="space-y-3">
+      {/* Introspective Heart Questions - iOS List */}
+      <div className="space-y-1.5">
+        <span className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider px-3">
+          Heart Examination
+        </span>
+        <div className="ios-card divide-y divide-black/[0.06] dark:divide-white/[0.08] overflow-hidden">
           {devotional.questions.map((q, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-3 p-3.5 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-750 text-xs sm:text-sm font-medium text-stone-800 dark:text-stone-200"
-            >
-              <span className="w-5 h-5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">
+            <div key={i} className="p-4 flex items-start gap-3">
+              <span className="w-5 h-5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-[11px] flex-shrink-0 mt-0.5">
                 {i + 1}
               </span>
-              <p className="leading-relaxed">{q}</p>
+              <p className="text-[14px] font-medium text-[#1C1C1E] dark:text-white leading-relaxed">
+                {q}
+              </p>
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* Closing Prayer */}
-      <section className="rounded-3xl bg-gradient-to-br from-amber-50 to-stone-100 dark:from-stone-900 dark:to-stone-850 border border-amber-200/60 dark:border-stone-800 p-6 sm:p-8 space-y-3">
-        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
-          <HeartHandshake className="w-5 h-5" />
-          <h4 className="font-serif font-bold text-lg">Pastoral Closing Prayer</h4>
+      {/* Closing Pastoral Prayer */}
+      <div className="ios-card p-5 space-y-2 border-l-4 border-l-amber-500">
+        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+          <HeartHandshake className="w-4 h-4" />
+          <span className="text-[12px] font-semibold uppercase tracking-wider">
+            Pastoral Benediction
+          </span>
         </div>
-
-        <blockquote className="font-serif italic text-sm sm:text-base text-stone-800 dark:text-stone-200 leading-relaxed">
+        <blockquote className="font-reading text-[15px] italic text-[#1C1C1E] dark:text-white leading-relaxed">
           "{devotional.closingPrayer}"
         </blockquote>
-      </section>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BIBLE_BOOKS } from '../data/bibleDatabase';
-import { X, Search, BookOpen, Layers } from 'lucide-react';
+import { X, Search, BookOpen, ChevronRight } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -34,64 +34,75 @@ export const BookChapterPickerModal: React.FC<Props> = ({
   const chaptersArray = Array.from({ length: currentBookInfo.chaptersCount }, (_, i) => i + 1);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-stone-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-white dark:bg-stone-900 rounded-t-3xl md:rounded-3xl shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden flex flex-col max-h-[85vh]">
-        {/* Header */}
-        <div className="p-4 md:p-5 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
-              Select Scripture Passage
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200 select-none">
+      <div className="w-full max-w-xl ios-card rounded-t-[28px] sm:rounded-[24px] shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden flex flex-col max-h-[85vh]">
+        {/* Grabber Bar for iOS sheet feel */}
+        <div className="pt-3 pb-1">
+          <div className="w-9 h-1 rounded-full bg-black/20 dark:bg-white/20 mx-auto" />
+        </div>
+
+        {/* Navigation Bar */}
+        <div className="px-5 py-3 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.08]">
+          <div>
+            <h3 className="text-[17px] font-semibold text-[#1C1C1E] dark:text-white leading-tight">
+              Select Book & Chapter
             </h3>
+            <span className="text-[12px] text-[#8E8E93]">
+              66 Books • 1,189 Chapters
+            </span>
           </div>
+
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 transition"
+            className="w-7 h-7 rounded-full bg-black/[0.05] dark:bg-white/[0.08] flex items-center justify-center text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white active:scale-95 transition"
+            aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Search & Testament Filters */}
-        <div className="p-4 bg-stone-50 dark:bg-stone-800/50 border-b border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+        {/* Search & iOS Segmented Filter */}
+        <div className="p-3 bg-black/[0.02] dark:bg-white/[0.02] border-b border-black/[0.06] dark:border-white/[0.08] space-y-2.5">
+          {/* Apple Search Input */}
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8E93]" />
             <input
               type="text"
-              placeholder="Search 66 Books (e.g. Psalms, John, Genesis)..."
+              placeholder="Search books..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full pl-9 pr-3 py-1.5 text-[14px] bg-black/[0.05] dark:bg-white/[0.08] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-stone-200/70 dark:bg-stone-800 p-1 rounded-xl">
+          {/* Segmented Control */}
+          <div className="ios-segmented flex p-0.5 rounded-[9px]">
             <button
               onClick={() => setFilterTestament('ALL')}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
+              className={`flex-1 py-1 rounded-[7px] text-[12px] font-semibold transition ${
                 filterTestament === 'ALL'
-                  ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-sm'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  ? 'bg-white dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white shadow-xs'
+                  : 'text-[#8E8E93]'
               }`}
             >
               All (66)
             </button>
             <button
               onClick={() => setFilterTestament('OT')}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
+              className={`flex-1 py-1 rounded-[7px] text-[12px] font-semibold transition ${
                 filterTestament === 'OT'
-                  ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-sm'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  ? 'bg-white dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white shadow-xs'
+                  : 'text-[#8E8E93]'
               }`}
             >
               Old Test. (39)
             </button>
             <button
               onClick={() => setFilterTestament('NT')}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
+              className={`flex-1 py-1 rounded-[7px] text-[12px] font-semibold transition ${
                 filterTestament === 'NT'
-                  ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-sm'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  ? 'bg-white dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white shadow-xs'
+                  : 'text-[#8E8E93]'
               }`}
             >
               New Test. (27)
@@ -99,77 +110,53 @@ export const BookChapterPickerModal: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Dual Panel: Books Column + Chapters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-100 dark:divide-stone-800 overflow-y-auto flex-1 min-h-[360px]">
-          {/* Left Column: Books list */}
-          <div className="p-3 overflow-y-auto max-h-[220px] md:max-h-full space-y-1">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 px-2 py-1">
-              Select Book
-            </p>
-            {filteredBooks.map((b) => (
-              <button
-                key={b.name}
-                onClick={() => setSelectedBook(b.name)}
-                className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium flex items-center justify-between transition ${
-                  selectedBook === b.name
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{b.name}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                      selectedBook === b.name
-                        ? 'bg-amber-700 text-white'
-                        : 'bg-stone-100 dark:bg-stone-800 text-stone-500'
-                    }`}
-                  >
-                    {b.testament}
-                  </span>
-                </div>
-                <span
-                  className={`text-xs ${
-                    selectedBook === b.name ? 'text-amber-100' : 'text-stone-400'
+        {/* Dual Pane: Books Column & Chapters Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-black/[0.06] dark:divide-white/[0.08] overflow-y-auto flex-1 min-h-[320px]">
+          {/* Books List */}
+          <div className="p-2 overflow-y-auto max-h-[220px] sm:max-h-[380px] space-y-0.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93] px-3 py-1 block">
+              Books
+            </span>
+            {filteredBooks.map((b) => {
+              const isSelected = selectedBook === b.name;
+              return (
+                <button
+                  key={b.name}
+                  onClick={() => setSelectedBook(b.name)}
+                  className={`w-full text-left px-3 py-2 rounded-[9px] text-[14px] font-medium flex items-center justify-between transition ${
+                    isSelected
+                      ? 'bg-amber-500 text-white font-semibold'
+                      : 'text-[#1C1C1E] dark:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
                   }`}
                 >
-                  {b.chaptersCount} ch
-                </span>
-              </button>
-            ))}
+                  <span>{b.name}</span>
+                  <span className={`text-[11px] ${isSelected ? 'text-white/80' : 'text-[#8E8E93]'}`}>
+                    {b.chaptersCount} ch
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Right Column: Chapters Grid */}
-          <div className="p-4 overflow-y-auto flex-1">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h4 className="font-bold text-base text-stone-900 dark:text-stone-100 font-serif">
-                  {currentBookInfo.name}
-                </h4>
-                <p className="text-xs text-stone-500 dark:text-stone-400">
-                  {currentBookInfo.genre} • {currentBookInfo.chaptersCount} Chapters total
-                </p>
-              </div>
-            </div>
-
-            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">
-              Select Chapter
-            </p>
-            <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
+          {/* Chapters Grid */}
+          <div className="p-3 overflow-y-auto max-h-[220px] sm:max-h-[380px]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93] px-2 py-1 block">
+              {selectedBook} Chapters
+            </span>
+            <div className="grid grid-cols-5 gap-1.5 pt-1">
               {chaptersArray.map((ch) => {
-                const isCurrent =
-                  currentBook === currentBookInfo.name && currentChapter === ch;
+                const isCurrent = selectedBook === currentBook && ch === currentChapter;
                 return (
                   <button
                     key={ch}
                     onClick={() => {
-                      onSelect(currentBookInfo.name, ch);
+                      onSelect(selectedBook, ch);
                       onClose();
                     }}
-                    className={`aspect-square rounded-xl text-sm font-semibold flex items-center justify-center transition border ${
+                    className={`h-9 rounded-[9px] text-[13px] font-semibold flex items-center justify-center transition active:scale-90 ${
                       isCurrent
-                        ? 'bg-amber-600 border-amber-600 text-white shadow-md'
-                        : 'border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50/50 dark:hover:bg-amber-950/30'
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'bg-black/[0.04] dark:bg-white/[0.06] text-[#1C1C1E] dark:text-white hover:bg-black/[0.08] dark:hover:bg-white/[0.1]'
                     }`}
                   >
                     {ch}
@@ -178,17 +165,6 @@ export const BookChapterPickerModal: React.FC<Props> = ({
               })}
             </div>
           </div>
-        </div>
-
-        {/* Footer info */}
-        <div className="p-3 bg-stone-50 dark:bg-stone-800/80 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
-          <span>All 66 books available completely offline</span>
-          <button
-            onClick={onClose}
-            className="px-3 py-1 font-semibold rounded-lg bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 dark:hover:bg-stone-600 text-stone-800 dark:text-stone-100 transition"
-          >
-            Cancel
-          </button>
         </div>
       </div>
     </div>

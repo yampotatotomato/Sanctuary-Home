@@ -10,7 +10,6 @@ import {
   Heart,
   Search,
   X,
-  Sparkles,
 } from 'lucide-react';
 
 export const JournalScreen: React.FC = () => {
@@ -29,10 +28,10 @@ export const JournalScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const gratitudePresets = [
-    'What is one quiet blessing you received from God today?',
-    'Who is someone God used to encourage your heart this week?',
-    'What difficult circumstance produced unexpected endurance in you?',
-    'For which answered prayer are you offering thanksgiving right now?',
+    'A quiet blessing received today',
+    'Someone who encouraged my faith',
+    'Answered prayer of thanksgiving',
+    'God’s comfort during hardship',
   ];
 
   const handleSave = (e: React.FormEvent) => {
@@ -73,155 +72,155 @@ export const JournalScreen: React.FC = () => {
   });
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 animate-in fade-in duration-300">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
+    <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-5 animate-in fade-in duration-200">
+      {/* Apple HIG Header */}
+      <div className="flex items-end justify-between pb-1">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            <Feather className="w-4 h-4" />
-            <span>Spiritual Reflection</span>
-          </div>
-          <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-100 mt-1">
-            Personal Prayer Journal
-          </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Private, offline gratitude entries, scripture tags, and answered prayers.
-          </p>
+          <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wider block">
+            Reflections
+          </span>
+          <h1 className="text-[34px] font-bold tracking-tight text-[#1C1C1E] dark:text-white leading-tight">
+            Prayer Journal
+          </h1>
         </div>
 
         <button
           onClick={() => setIsComposerOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-bold shadow-md transition"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-[13px] font-semibold shadow-xs transition"
         >
           <Plus className="w-4 h-4" />
-          <span>New Journal Entry</span>
+          <span>New Entry</span>
         </button>
       </div>
 
-      {/* Search & Entry Counter */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-          <input
-            type="text"
-            placeholder="Search reflections & scripture..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
-          />
-        </div>
-
-        <span className="text-xs text-stone-500 font-mono">
-          {filteredEntries.length} Saved {filteredEntries.length === 1 ? 'Entry' : 'Entries'}
-        </span>
+      {/* Apple Search Bar */}
+      <div className="relative">
+        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E8E93]" />
+        <input
+          type="text"
+          placeholder="Search reflections & scripture..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-9 pr-3 py-2 text-[14px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[11px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
+        />
       </div>
 
-      {/* Entries List */}
-      <div className="space-y-4">
+      {/* Journal Entries List (Apple Journal Style) */}
+      <div className="space-y-3">
         {filteredEntries.length === 0 ? (
-          <div className="p-12 text-center rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-3">
-            <Feather className="w-8 h-8 text-stone-400 mx-auto" />
-            <h4 className="font-serif font-bold text-base text-stone-800 dark:text-stone-200">
-              Your journal is ready for your thoughts
-            </h4>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto">
-              Document spiritual insights, answered prayers, and gratitude for God's blessings.
+          <div className="ios-card p-8 text-center space-y-2">
+            <Feather className="w-8 h-8 text-[#8E8E93] mx-auto opacity-50" />
+            <h3 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white">
+              No journal reflections yet
+            </h3>
+            <p className="text-[13px] text-[#8E8E93] max-w-sm mx-auto">
+              Record answered prayers, quiet blessings, and scripture meditations offline.
             </p>
-            <button
-              onClick={() => setIsComposerOpen(true)}
-              className="mt-2 px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-semibold"
-            >
-              Write First Entry
-            </button>
+            <div className="pt-2">
+              <button
+                onClick={() => setIsComposerOpen(true)}
+                className="px-4 py-2 rounded-full bg-amber-500 text-white text-[13px] font-semibold"
+              >
+                Create First Entry
+              </button>
+            </div>
           </div>
         ) : (
           filteredEntries.map((entry) => (
-            <article
+            <div
               key={entry.id}
-              className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm space-y-4 hover:border-amber-300 dark:hover:border-amber-900 transition"
+              className="ios-card p-5 space-y-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
+                  <h3 className="text-[17px] font-semibold text-[#1C1C1E] dark:text-white leading-snug">
                     {entry.title}
                   </h3>
-                  <div className="flex items-center gap-2 text-[11px] text-stone-400 font-mono mt-0.5">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>
-                      {new Date(entry.createdAt).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
+                  <span className="text-[12px] text-[#8E8E93] block mt-0.5">
+                    {new Date(entry.createdAt).toLocaleDateString(undefined, {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
                 </div>
 
                 <button
                   onClick={() => deleteJournalEntry(entry.id)}
-                  className="p-1.5 text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+                  className="w-7 h-7 rounded-full text-[#8E8E93] hover:text-red-500 hover:bg-black/[0.04] dark:hover:bg-white/[0.08] flex items-center justify-center transition active:scale-95"
                   title="Delete Entry"
+                  aria-label="Delete Entry"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              {/* Gratitude Callout */}
+              {/* Gratitude Badge */}
               {entry.gratitudePrompt && (
-                <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40 text-xs text-amber-950 dark:text-amber-200">
-                  <Heart className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold">Gratitude: </span>
-                    <span>{entry.gratitudePrompt}</span>
-                  </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-[10px] bg-amber-500/10 text-amber-900 dark:text-amber-200 text-[12px]">
+                  <Heart className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                  <span className="truncate">
+                    <strong>Gratitude:</strong> {entry.gratitudePrompt}
+                  </span>
                 </div>
               )}
 
-              {/* Content Body */}
-              <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed whitespace-pre-line font-serif">
+              {/* Reflection Body */}
+              <p className="text-[14px] font-reading text-[#3C3C43] dark:text-[#EBEBF5]/90 leading-relaxed whitespace-pre-line">
                 {entry.content}
               </p>
 
-              {/* Scripture Tag Jump Button */}
+              {/* Tagged Scripture */}
               {entry.scriptureTag && (
-                <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center gap-2">
+                <div className="pt-2 border-t border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between">
                   <button
                     onClick={() => handleScriptureTagClick(entry.scriptureTag!)}
-                    className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-stone-700 transition"
+                    className="flex items-center gap-1.5 text-[12px] font-semibold text-amber-600 dark:text-amber-400 hover:opacity-80"
                   >
-                    <BookOpen className="w-3 h-3 text-amber-600" />
-                    <span>Tagged Scripture: {entry.scriptureTag}</span>
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Passage: {entry.scriptureTag}</span>
                   </button>
                 </div>
               )}
-            </article>
+            </div>
           ))
         )}
       </div>
 
-      {/* Composer Modal */}
+      {/* Apple iOS Modal Sheet for New Journal Entry */}
       {isComposerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white dark:bg-stone-900 rounded-3xl shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Feather className="w-5 h-5 text-amber-600" />
-                <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
-                  New Journal Reflection
-                </h3>
-              </div>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200 select-none">
+          <div className="w-full max-w-lg ios-card rounded-t-[28px] sm:rounded-[24px] shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Grabber handle */}
+            <div className="pt-3 pb-1">
+              <div className="w-9 h-1 rounded-full bg-black/20 dark:bg-white/20 mx-auto" />
+            </div>
+
+            {/* iOS Modal Navigation Bar */}
+            <div className="px-5 py-3 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.08]">
               <button
                 onClick={() => setIsComposerOpen(false)}
-                className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 hover:text-stone-900 dark:hover:text-white"
+                className="text-[15px] font-medium text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white"
               >
-                <X className="w-5 h-5" />
+                Cancel
+              </button>
+
+              <h3 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white">
+                New Journal Entry
+              </h3>
+
+              <button
+                onClick={handleSave}
+                className="text-[15px] font-semibold text-amber-600 dark:text-amber-400"
+              >
+                Save
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto flex-1">
+            <form onSubmit={handleSave} className="p-5 space-y-4 overflow-y-auto flex-1 select-text">
               <div>
-                <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-                  Reflection Title
+                <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                  Title
                 </label>
                 <input
                   type="text"
@@ -229,76 +228,62 @@ export const JournalScreen: React.FC = () => {
                   placeholder="e.g. Walking in Quiet Trust"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2 text-[15px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-                  Gratitude Prompt
+                <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                  Gratitude Note (Optional)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Thankful for healing, family prayer, and God's peace"
+                  placeholder="What are you thankful for today?"
                   value={gratitudePrompt}
                   onChange={(e) => setGratitudePrompt(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2 text-[14px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
+
+                {/* Quick Presets */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  {gratitudePresets.slice(0, 2).map((p, i) => (
+                  {gratitudePresets.map((preset) => (
                     <button
-                      key={i}
                       type="button"
-                      onClick={() => setGratitudePrompt(p)}
-                      className="text-[10px] text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-lg text-left"
+                      key={preset}
+                      onClick={() => setGratitudePrompt(preset)}
+                      className="text-[11px] px-2.5 py-0.5 rounded-full bg-black/[0.03] dark:bg-white/[0.06] text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white transition"
                     >
-                      "{p.slice(0, 45)}..."
+                      {preset}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-                  Scripture Citation Tag (Optional)
+                <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                  Scripture Tag (e.g. Romans 8:28)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Psalms 23:1 or Romans 8:31"
+                  placeholder="Psalms 23:1"
                   value={scriptureTag}
                   onChange={(e) => setScriptureTag(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2 text-[14px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
+                <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
                   Reflection Content
                 </label>
                 <textarea
                   required
-                  rows={5}
-                  placeholder="What is the Holy Spirit speaking to your heart today?..."
+                  rows={6}
+                  placeholder="Write your meditation, prayer, or insights..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500 font-serif leading-relaxed"
+                  className="w-full px-3.5 py-2.5 text-[14px] font-reading bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500 resize-none leading-relaxed"
                 />
-              </div>
-
-              <div className="pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsComposerOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow transition active:scale-95"
-                >
-                  Save Reflection
-                </button>
               </div>
             </form>
           </div>

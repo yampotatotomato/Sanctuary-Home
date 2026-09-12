@@ -8,9 +8,7 @@ import {
   Bell,
   BellOff,
   Check,
-  Plus,
   Filter,
-  Sparkles,
 } from 'lucide-react';
 
 export const PrayerGroupsScreen: React.FC = () => {
@@ -24,42 +22,39 @@ export const PrayerGroupsScreen: React.FC = () => {
   });
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            <Users className="w-4 h-4" />
-            <span>Christian Fellowship</span>
-          </div>
-          <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-100 mt-1">
-            Prayer Circles & Small Groups
-          </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Connect in authentic biblical community, intercessory prayer, and local mission.
-          </p>
-        </div>
-
-        {/* Category Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setFilterCategory(c)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${
-                filterCategory === c
-                  ? 'bg-amber-600 text-white shadow-sm'
-                  : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+    <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-5 animate-in fade-in duration-200">
+      {/* Apple HIG Header */}
+      <div className="pb-1">
+        <span className="text-[13px] font-semibold text-[#8E8E93] uppercase tracking-wider block">
+          Community
+        </span>
+        <h1 className="text-[34px] font-bold tracking-tight text-[#1C1C1E] dark:text-white leading-tight">
+          Fellowship
+        </h1>
+        <p className="text-[13px] text-[#8E8E93] mt-0.5">
+          Prayer circles, small groups, and local ministry gatherings.
+        </p>
       </div>
 
-      {/* Groups List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Apple Category Filter Pills */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar select-none">
+        {categories.map((c) => (
+          <button
+            key={c}
+            onClick={() => setFilterCategory(c)}
+            className={`px-3 py-1 rounded-full text-[12px] font-semibold whitespace-nowrap transition active:scale-95 ${
+              filterCategory === c
+                ? 'bg-amber-500 text-white shadow-xs'
+                : 'bg-black/[0.04] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-white hover:bg-black/[0.08]'
+            }`}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+
+      {/* Groups List (iOS Cards) */}
+      <div className="space-y-3">
         {filteredGroups.map((group) => {
           const isAttending = group.rsvpStatus === 'attending';
           const isInterested = group.rsvpStatus === 'interested';
@@ -67,57 +62,49 @@ export const PrayerGroupsScreen: React.FC = () => {
           return (
             <div
               key={group.id}
-              className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 shadow-sm flex flex-col justify-between hover:border-amber-300 dark:hover:border-amber-900 transition"
+              className="ios-card p-4 space-y-3"
             >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400">
-                    {group.category} Circle
-                  </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400">
+                  {group.category} Circle
+                </span>
 
-                  <button
-                    onClick={() => toggleGroupReminder(group.id)}
-                    className={`p-1.5 rounded-xl border transition ${
-                      group.reminderEnabled
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
-                        : 'border-stone-200 dark:border-stone-700 text-stone-400 hover:text-stone-700'
-                    }`}
-                    title={group.reminderEnabled ? 'Reminder Active' : 'Enable Reminder'}
-                  >
-                    {group.reminderEnabled ? (
-                      <Bell className="w-4 h-4" />
-                    ) : (
-                      <BellOff className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
+                <button
+                  onClick={() => toggleGroupReminder(group.id)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition active:scale-90 ${
+                    group.reminderEnabled
+                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-black/[0.04] dark:bg-white/[0.08] text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white'
+                  }`}
+                  title={group.reminderEnabled ? 'Reminder Active' : 'Enable Reminder'}
+                >
+                  {group.reminderEnabled ? (
+                    <Bell className="w-3.5 h-3.5" />
+                  ) : (
+                    <BellOff className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
 
-                <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
+              <div>
+                <h3 className="text-[17px] font-semibold text-[#1C1C1E] dark:text-white leading-snug">
                   {group.groupName}
                 </h3>
-
-                <div className="flex items-center gap-2 text-xs text-stone-600 dark:text-stone-300">
-                  <Clock className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <div className="flex items-center gap-1.5 text-[13px] text-[#8E8E93] mt-1">
+                  <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                   <span>{group.meetingTime}</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-[11px] text-stone-400 font-mono">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>
-                    Joined {new Date(group.joinedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                  </span>
                 </div>
               </div>
 
-              {/* RSVP Actions Strip */}
-              <div className="mt-6 pt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-2">
+              {/* Action Buttons (iOS Style) */}
+              <div className="pt-2.5 border-t border-black/[0.05] dark:border-white/[0.06] flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => toggleGroupRsvp(group.id, isAttending ? 'none' : 'attending')}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[12px] font-semibold transition active:scale-95 ${
                       isAttending
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-stone-700 dark:text-stone-200'
+                        ? 'bg-[#34C759] text-white shadow-xs'
+                        : 'bg-black/[0.04] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-white hover:bg-black/[0.08]'
                     }`}
                   >
                     {isAttending && <Check className="w-3.5 h-3.5" />}
@@ -126,10 +113,10 @@ export const PrayerGroupsScreen: React.FC = () => {
 
                   <button
                     onClick={() => toggleGroupRsvp(group.id, isInterested ? 'none' : 'interested')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                    className={`px-3 py-1.5 rounded-full text-[12px] font-semibold transition active:scale-95 ${
                       isInterested
-                        ? 'bg-amber-600 text-white shadow-sm'
-                        : 'bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-stone-700 dark:text-stone-200'
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'bg-black/[0.04] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-white hover:bg-black/[0.08]'
                     }`}
                   >
                     <span>{isInterested ? 'Interested ✓' : 'Interested'}</span>
@@ -137,8 +124,8 @@ export const PrayerGroupsScreen: React.FC = () => {
                 </div>
 
                 {group.reminderEnabled && (
-                  <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                    <Bell className="w-3 h-3" /> Reminder On
+                  <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <Bell className="w-3 h-3" /> Alert On
                   </span>
                 )}
               </div>

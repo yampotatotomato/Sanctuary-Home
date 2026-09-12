@@ -5,7 +5,9 @@ import {
   BibleBookmarkEntity,
   JoinedGroupEntity,
   JournalEntity,
+  PastorEntity,
   PastorMessageEntity,
+  SermonEntity,
   StaffAccount,
   ThemePalette,
   Translation,
@@ -13,8 +15,10 @@ import {
 import {
   INITIAL_ANNOUNCEMENTS,
   INITIAL_JOURNALS,
+  INITIAL_PASTORS,
   INITIAL_PASTOR_CHAT,
   INITIAL_PRAYER_GROUPS,
+  INITIAL_SERMON_ENTITIES,
   STAFF_ACCOUNTS,
 } from '../data/seedData';
 
@@ -22,6 +26,7 @@ export type ScreenId =
   | 'home'
   | 'scripture'
   | 'devotion'
+  | 'sermons'
   | 'pastors'
   | 'groups'
   | 'journal'
@@ -40,7 +45,10 @@ interface InAppBanner {
 interface SanctuaryContextType {
   // Navigation
   activeScreen: ScreenId;
-  navigateTo: (screen: ScreenId, extra?: { book?: string; chapter?: number; verse?: number }) => void;
+  navigateTo: (
+    screen: ScreenId,
+    extra?: { book?: string; chapter?: number; verse?: number; sermonId?: string }
+  ) => void;
 
   // Theming & Preferences
   themePalette: ThemePalette;
@@ -66,6 +74,16 @@ interface SanctuaryContextType {
   toggleBookmark: (book: string, chapter: number, verse: number, translation: Translation, text: string) => void;
   isBookmarked: (book: string, chapter: number, verse: number, translation: Translation) => boolean;
   jumpToScripture: (book: string, chapter: number, verse?: number) => void;
+
+  // Sermon Library (Local Drift-Compatible Database Entities)
+  pastors: PastorEntity[];
+  sermons: SermonEntity[];
+  selectedSermonId: string | null;
+  setSelectedSermonId: (id: string | null) => void;
+  addPastor: (pastor: Omit<PastorEntity, 'id'>) => PastorEntity;
+  addSermon: (sermon: Omit<SermonEntity, 'id' | 'createdAt'>) => SermonEntity;
+  updateSermon: (id: string, updates: Partial<SermonEntity>) => void;
+  deleteSermon: (id: string) => void;
 
   // Audio Player
   audioTrack: ActiveAudioTrack | null;
@@ -114,10 +132,6 @@ interface SanctuaryContextType {
   setDailyVerseReminder: (enabled: boolean) => void;
   devotionalReminder: boolean;
   setDevotionalReminder: (enabled: boolean) => void;
-
-  // Flutter Architecture Inspector
-  isFlutterInspectorOpen: boolean;
-  setIsFlutterInspectorOpen: (open: boolean) => void;
 }
 
 const SanctuaryContext = createContext<SanctuaryContextType | undefined>(undefined);
@@ -203,6 +217,28 @@ export const SanctuaryProvider: React.FC<{ children: ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : null;
   });
 
+  // Sermon Library (Local Drift-Compatible Database Entities)
+  const [pastors, setPastors] = useState<PastorEntity[]>(() => {
+    const saved = localStorage.getItem('church_sanctuary_pastors');
+    return saved ? JSON.parse(saved) : INITIAL_PASTORS;
+  });
+
+  const [sermons, setSermons] = useState<SermonEntity[]>(() => {
+    const saved = localStorage.getItem('church_sanctuary_sermons');
+    return saved ? JSON.parse(saved) : INITIAL_SERMON_ENTITIES;
+  });
+
+  const [selectedSermonId, setSelectedSermonId] = useState<string | null>(null);
+
+  // Sync dark mode class on <html> document element to prevent any inadvertent OS scheme overrides
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   // Notifications Banner
   const [activeBanner, setActiveBanner] = useState<InAppBanner | null>(null);
 
@@ -213,9 +249,6 @@ export const SanctuaryProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [devotionalReminder, setDevotionalReminderState] = useState<boolean>(() => {
     return localStorage.getItem('church_sanctuary_devotional_remind') !== 'false';
   });
-
-  // Flutter Code Inspector Modal
-  const [isFlutterInspectorOpen, setIsFlutterInspectorOpen] = useState<boolean>(false);
 
   // Save changes to localStorage
   const setThemePalette = (palette: ThemePalette) => {
@@ -263,6 +296,54 @@ export const SanctuaryProvider: React.FC<{ children: ReactNode }> = ({ children 
     localStorage.setItem('church_sanctuary_devotional_remind', String(enabled));
   };
 
+  // Sermon Library Actions
+  const addPastor = (pastorData: Omit<PastorEntity, 'id'>): PastorEntity => {
+    const newPastor: PastorEntity = {
+      ...pastorData,
+      id: `pastor-${Date.now()}`,
+    };
+    const updated = [newPastor, ...pastors];
+    setPastors(updated);
+    localStorage.setItem('church_sanctuary_pastors', JSON.stringify(updated));
+    triggerBanner('Pastor Registered', `${newPastor.name} added to pastoral directory.`, 'info');
+    return newPastor;
+  };
+
+  const addSermon = (sermonData: Omit<SermonEntity, 'id' | 'createdAt'>): SermonEntity => {
+    const newSermon: SermonEntity = {
+      ...sermonData,
+      id: `sermon-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [newSermon, ...sermons];
+    setSermons(updated);
+    localStorage.setItem('church_sanctuary_sermons', JSON.stringify(updated));
+    triggerBanner(
+      sermonData.isPublished ? 'Sermon Published' : 'Draft Saved',
+      `"${sermonData.title}" saved to local library.`,
+      'info'
+    );
+    return newSermon;
+  };
+
+  const updateSermon = (id: string, updates: Partial<SermonEntity>) => {
+    const updated = sermons.map((s) => (s.id === id ? { ...s, ...updates } : s));
+    setSermons(updated);
+    localStorage.setItem('church_sanctuary_sermons', JSON.stringify(updated));
+    triggerBanner('Sermon Updated', 'Changes saved to local Drift database.', 'info');
+  };
+
+  const deleteSermon = (id: string) => {
+    const sermon = sermons.find((s) => s.id === id);
+    const updated = sermons.filter((s) => s.id !== id);
+    setSermons(updated);
+    localStorage.setItem('church_sanctuary_sermons', JSON.stringify(updated));
+    if (selectedSermonId === id) {
+      setSelectedSermonId(null);
+    }
+    triggerBanner('Sermon Deleted', `"${sermon?.title || 'Sermon'}" removed from library.`, 'info');
+  };
+
   // Scripture jump helper
   const jumpToScripture = (book: string, chapter: number, verse?: number) => {
     setCurrentBook(book);
@@ -271,10 +352,16 @@ export const SanctuaryProvider: React.FC<{ children: ReactNode }> = ({ children 
     setActiveScreen('scripture');
   };
 
-  const navigateTo = (screen: ScreenId, extra?: { book?: string; chapter?: number; verse?: number }) => {
+  const navigateTo = (
+    screen: ScreenId,
+    extra?: { book?: string; chapter?: number; verse?: number; sermonId?: string }
+  ) => {
     if (extra?.book && extra?.chapter) {
       jumpToScripture(extra.book, extra.chapter, extra.verse);
       return;
+    }
+    if (extra?.sermonId !== undefined) {
+      setSelectedSermonId(extra.sermonId);
     }
     setActiveScreen(screen);
   };
@@ -557,6 +644,14 @@ export const SanctuaryProvider: React.FC<{ children: ReactNode }> = ({ children 
         toggleBookmark,
         isBookmarked,
         jumpToScripture,
+        pastors,
+        sermons,
+        selectedSermonId,
+        setSelectedSermonId,
+        addPastor,
+        addSermon,
+        updateSermon,
+        deleteSermon,
         audioTrack,
         isPlaying,
         audioTime,
@@ -589,8 +684,6 @@ export const SanctuaryProvider: React.FC<{ children: ReactNode }> = ({ children 
         setDailyVerseReminder,
         devotionalReminder,
         setDevotionalReminder,
-        isFlutterInspectorOpen,
-        setIsFlutterInspectorOpen,
       }}
     >
       {children}

@@ -1,34 +1,202 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
-  body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  :root {
+    color-scheme: light;
+    color: #1C1C1E;
+    background-color: #F2F2F7;
   }
 
-  .font-serif {
-    font-family: 'Newsreader', Georgia, Cambria, 'Times New Roman', Times, serif;
+  :root.dark,
+  html.dark {
+    color-scheme: dark;
+    color: #F2F2F7;
+    background-color: #000000;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.011em;
+    -webkit-tap-highlight-color: transparent;
+    color: #1C1C1E;
+    background-color: #F2F2F7;
+  }
+
+  .dark body,
+  html.dark body,
+  body.dark {
+    color: #F2F2F7;
+    background-color: #000000;
+  }
+
+  .font-serif,
+  .font-reading {
+    font-family: "New York", 'Newsreader', -apple-system-ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   }
 
   .font-display {
-    font-family: 'Cinzel', Georgia, serif;
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, 'Cinzel', Georgia, serif;
+    letter-spacing: -0.02em;
   }
 }
 
-/* Custom scrollbar */
+/* Apple iOS System Inset Group List Utilities */
+.ios-card {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: #1C1C1E;
+}
+.dark .ios-card,
+html.dark .ios-card {
+  background-color: #1C1C1E;
+  box-shadow: none;
+  color: #F2F2F7;
+}
+
+/* Apple Frosted Glass / Vibrancy */
+.ios-glass {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #1C1C1E;
+}
+.dark .ios-glass,
+html.dark .ios-glass {
+  background-color: rgba(28, 28, 30, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #F2F2F7;
+}
+
+/* iOS Segmented Control */
+.ios-segmented {
+  background-color: rgba(118, 118, 128, 0.12);
+  border-radius: 9px;
+  padding: 2px;
+}
+.dark .ios-segmented,
+html.dark .ios-segmented {
+  background-color: rgba(118, 118, 128, 0.24);
+}
+
+/* Markdown typography rendering in Sermon Detail */
+.sermon-markdown {
+  color: #1C1C1E;
+  line-height: 1.75;
+}
+.dark .sermon-markdown,
+html.dark .sermon-markdown {
+  color: #EBEBF5;
+}
+
+.sermon-markdown h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #1C1C1E;
+  font-family: "New York", 'Newsreader', serif;
+}
+.dark .sermon-markdown h1,
+html.dark .sermon-markdown h1 {
+  color: #FFFFFF;
+}
+
+.sermon-markdown h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #1C1C1E;
+  font-family: "New York", 'Newsreader', serif;
+}
+.dark .sermon-markdown h2,
+html.dark .sermon-markdown h2 {
+  color: #FFFFFF;
+}
+
+.sermon-markdown h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #1C1C1E;
+}
+.dark .sermon-markdown h3,
+html.dark .sermon-markdown h3 {
+  color: #FFFFFF;
+}
+
+.sermon-markdown p {
+  margin-bottom: 1rem;
+}
+
+.sermon-markdown ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.sermon-markdown ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.sermon-markdown li {
+  margin-bottom: 0.35rem;
+}
+
+.sermon-markdown blockquote {
+  border-left: 3px solid #D97706;
+  padding-left: 1rem;
+  font-style: italic;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  color: #4B5563;
+}
+.dark .sermon-markdown blockquote,
+html.dark .sermon-markdown blockquote {
+  color: #D1D5DB;
+  border-left-color: #F59E0B;
+}
+
+.sermon-markdown strong {
+  font-weight: 600;
+  color: #1C1C1E;
+}
+.dark .sermon-markdown strong,
+html.dark .sermon-markdown strong {
+  color: #FFFFFF;
+}
+
+.sermon-markdown a {
+  color: #D97706;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.dark .sermon-markdown a,
+html.dark .sermon-markdown a {
+  color: #FBBF24;
+}
+
+/* Custom discreet Apple scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(168, 162, 158, 0.3);
+  background: rgba(142, 142, 147, 0.3);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 162, 158, 0.5);
+  background: rgba(142, 142, 147, 0.5);
 }
-

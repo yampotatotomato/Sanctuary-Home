@@ -109,3 +109,25 @@ export interface ActiveAudioTrack {
   type: 'sermon' | 'devotional';
   durationSec: number;
 }
+
+export interface PastorEntity {
+  id: string;
+  name: string;
+  roleTitle: string;
+  photoAsset?: string;
+  bio: string;
+}
+
+export interface SermonEntity {
+  id: string;
+  pastorId: string;
+  title: string;
+  theme: string;
+  sermonDate: string; // YYYY-MM-DD
+  markdownContent: string;
+  audioUrl?: string;
+  durationSec?: number;
+  scriptureRefs?: string[];
+  isPublished: boolean;
+  createdAt: string;
+}

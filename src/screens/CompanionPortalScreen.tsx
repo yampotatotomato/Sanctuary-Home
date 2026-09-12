@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useSanctuary } from '../context/SanctuaryContext';
 import { STAFF_ACCOUNTS } from '../data/seedData';
-import { StaffAccount, AnnouncementEntity } from '../types';
+import { StaffAccount, AnnouncementEntity, SermonEntity, PastorEntity } from '../types';
 import {
   ShieldCheck,
   Lock,
@@ -10,14 +11,20 @@ import {
   Radio,
   Pin,
   Calendar,
-  Clock,
   Trash2,
-  CheckCircle2,
   AlertCircle,
-  Plus,
-  BookOpen,
   Sparkles,
-  UserCheck,
+  BookOpen,
+  Edit3,
+  CheckCircle2,
+  FileText,
+  Plus,
+  Eye,
+  PenLine,
+  UserPlus,
+  Volume2,
+  X,
+  ExternalLink,
 } from 'lucide-react';
 
 export const CompanionPortalScreen: React.FC = () => {
@@ -29,28 +36,64 @@ export const CompanionPortalScreen: React.FC = () => {
     addAnnouncement,
     broadcastAnnouncement,
     deleteAnnouncement,
+    pastors,
+    sermons,
+    addPastor,
+    addSermon,
+    updateSermon,
+    deleteSermon,
+    navigateTo,
   } = useSanctuary();
 
-  // Login form state
+  // Active Portal Sub-Tab
+  const [activeTab, setActiveTab] = useState<'sermons' | 'announcements'>('sermons');
+
+  // Login Form State
   const [selectedStaffName, setSelectedStaffName] = useState<string>(STAFF_ACCOUNTS[0].name);
   const [passcode, setPasscode] = useState<string>(STAFF_ACCOUNTS[0].presetPasscode);
   const [loginError, setLoginError] = useState<string>('');
 
-  // Announcement composer state
-  const [title, setTitle] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-  const [category, setCategory] = useState<'General' | 'Worship' | 'Outreach' | 'Youth' | 'Community'>('Worship');
-  const [scriptureRef, setScriptureRef] = useState<string>('Romans 12:1-2');
-  const [ctaLabel, setCtaLabel] = useState<string>('View Details');
-  const [ctaLink, setCtaLink] = useState<string>('');
-  const [isPinned, setIsPinned] = useState<boolean>(false);
-  const [isScheduled, setIsScheduled] = useState<boolean>(false);
-  const [scheduledDate, setScheduledDate] = useState<string>(
+  // -------------------------------------------------------------
+  // SERMON COMPOSER STATE
+  // -------------------------------------------------------------
+  const [editingSermonId, setEditingSermonId] = useState<string | null>(null);
+  const [sermonTitle, setSermonTitle] = useState<string>('');
+  const [sermonPastorId, setSermonPastorId] = useState<string>(pastors[0]?.id || 'pastor-wright');
+  const [sermonTheme, setSermonTheme] = useState<string>('Grace');
+  const [customThemeInput, setCustomThemeInput] = useState<string>('');
+  const [isAddingNewTheme, setIsAddingNewTheme] = useState<boolean>(false);
+  const [sermonDate, setSermonDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [sermonAudioUrl, setSermonAudioUrl] = useState<string>('track-sermon-live');
+  const [sermonDurationMin, setSermonDurationMin] = useState<number>(32);
+  const [sermonScriptureRefs, setSermonScriptureRefs] = useState<string>('Romans 8:28-39');
+  const [sermonMarkdown, setSermonMarkdown] = useState<string>(
+    `## Expository Notes & Scripture Focus\n\n> "And we know that all things work together for good to them that love God." — Romans 8:28\n\n### 1. The Anchor of Divine Purpose\nTrue peace does not come from the absence of storms, but from the unyielding presence of Christ amidst the waves.\n\n* **Comprehensive Sovereignty:** Nothing escapes God's care.\n* **Eternal Security:** Conformed to the image of His Son.\n\n### Application for Believers\n1. Meditate on God's covenant faithfulness.\n2. Encourage someone in your prayer fellowship.`
+  );
+  const [editorMode, setEditorMode] = useState<'write' | 'preview'>('write');
+  const [sermonIsPublished, setSermonIsPublished] = useState<boolean>(true);
+
+  // New Pastor Modal / Inline State
+  const [showAddPastorModal, setShowAddPastorModal] = useState<boolean>(false);
+  const [newPastorName, setNewPastorName] = useState<string>('');
+  const [newPastorRole, setNewPastorRole] = useState<string>('Teaching Pastor');
+  const [newPastorBio, setNewPastorBio] = useState<string>('');
+
+  // -------------------------------------------------------------
+  // ANNOUNCEMENT COMPOSER STATE
+  // -------------------------------------------------------------
+  const [announcementTitle, setAnnouncementTitle] = useState<string>('');
+  const [announcementContent, setAnnouncementContent] = useState<string>('');
+  const [announcementCategory, setAnnouncementCategory] = useState<
+    'General' | 'Worship' | 'Outreach' | 'Youth' | 'Community'
+  >('Worship');
+  const [announcementScriptureRef, setAnnouncementScriptureRef] = useState<string>('Romans 12:1-2');
+  const [announcementIsPinned, setAnnouncementIsPinned] = useState<boolean>(false);
+  const [announcementIsScheduled, setAnnouncementIsScheduled] = useState<boolean>(false);
+  const [announcementScheduledDate, setAnnouncementScheduledDate] = useState<string>(
     new Date(Date.now() + 86400000).toISOString().slice(0, 16)
   );
-  const [autoBroadcast, setAutoBroadcast] = useState<boolean>(true);
 
-  const categories: Array<'General' | 'Worship' | 'Outreach' | 'Youth' | 'Community'> = [
+  const announcementCategories: Array<'General' | 'Worship' | 'Outreach' | 'Youth' | 'Community'> = [
     'General',
     'Worship',
     'Outreach',
@@ -58,129 +101,236 @@ export const CompanionPortalScreen: React.FC = () => {
     'Community',
   ];
 
-  // Handle login
+  // Preset themes
+  const baseThemes = ['Grace', 'Faith', 'Family', 'Worship', 'Youth', 'Prayer', 'Hope', 'Discipleship'];
+
+  // All themes currently in use or preset
+  const allAvailableThemes = Array.from(
+    new Set([...baseThemes, ...sermons.map((s) => s.theme).filter(Boolean)])
+  ).sort();
+
+  // Login handler
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
     const success = loginStaff(passcode.trim());
     if (!success) {
-      setLoginError('Invalid passcode. Please use the 4-digit code listed next to your name.');
+      setLoginError('Invalid passcode. Please enter the 4-digit code shown.');
     } else {
       setPasscode('');
     }
   };
 
-  // Quick 1-tap login helper for testing
-  const handleQuickLogin = (account: StaffAccount) => {
-    loginStaff(account.presetPasscode);
-  };
-
-  // Handle publish
-  const handleCreateAnnouncement = (e: React.FormEvent) => {
+  // Add new Pastor
+  const handleSaveNewPastor = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim() || !loggedInStaff) return;
+    if (!newPastorName.trim()) return;
 
-    addAnnouncement({
-      title: title.trim(),
-      content: content.trim(),
-      authorName: loggedInStaff.name,
-      category,
-      scriptureRef: scriptureRef.trim() || undefined,
-      ctaLabel: ctaLabel.trim() || undefined,
-      ctaLink: ctaLink.trim() || undefined,
-      isPinned,
-      isScheduled,
-      scheduledAt: isScheduled ? new Date(scheduledDate).toISOString() : undefined,
+    const created = addPastor({
+      name: newPastorName.trim(),
+      roleTitle: newPastorRole.trim() || 'Guest Preacher',
+      bio: newPastorBio.trim(),
     });
 
-    // Reset fields
-    setTitle('');
-    setContent('');
-    setIsPinned(false);
-    setIsScheduled(false);
+    setSermonPastorId(created.id);
+    setNewPastorName('');
+    setNewPastorRole('Teaching Pastor');
+    setNewPastorBio('');
+    setShowAddPastorModal(false);
   };
 
-  // IF NOT LOGGED IN: Show Staff Authentication Screen
+  // Save / Publish Sermon Handler
+  const handleSaveSermon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sermonTitle.trim() || !sermonMarkdown.trim()) return;
+
+    const finalTheme = isAddingNewTheme && customThemeInput.trim()
+      ? customThemeInput.trim()
+      : sermonTheme;
+
+    const refs = sermonScriptureRefs
+      .split(',')
+      .map((r) => r.trim())
+      .filter(Boolean);
+
+    const durationSec = (sermonDurationMin || 30) * 60;
+
+    if (editingSermonId) {
+      // Update existing
+      updateSermon(editingSermonId, {
+        title: sermonTitle.trim(),
+        pastorId: sermonPastorId,
+        theme: finalTheme,
+        sermonDate,
+        markdownContent: sermonMarkdown,
+        audioUrl: sermonAudioUrl.trim() || undefined,
+        durationSec,
+        scriptureRefs: refs.length > 0 ? refs : undefined,
+        isPublished: sermonIsPublished,
+      });
+      setEditingSermonId(null);
+    } else {
+      // Create new
+      addSermon({
+        title: sermonTitle.trim(),
+        pastorId: sermonPastorId,
+        theme: finalTheme,
+        sermonDate,
+        markdownContent: sermonMarkdown,
+        audioUrl: sermonAudioUrl.trim() || undefined,
+        durationSec,
+        scriptureRefs: refs.length > 0 ? refs : undefined,
+        isPublished: sermonIsPublished,
+      });
+    }
+
+    // Reset Form
+    setSermonTitle('');
+    setCustomThemeInput('');
+    setIsAddingNewTheme(false);
+    setSermonMarkdown('');
+    setSermonScriptureRefs('');
+    setEditorMode('write');
+    setSermonIsPublished(true);
+  };
+
+  // Populate form to edit existing sermon
+  const handleStartEditSermon = (sermon: SermonEntity) => {
+    setEditingSermonId(sermon.id);
+    setSermonTitle(sermon.title);
+    setSermonPastorId(sermon.pastorId);
+    setSermonTheme(sermon.theme);
+    setIsAddingNewTheme(false);
+    setSermonDate(sermon.sermonDate);
+    setSermonAudioUrl(sermon.audioUrl || '');
+    setSermonDurationMin(sermon.durationSec ? Math.round(sermon.durationSec / 60) : 30);
+    setSermonScriptureRefs(sermon.scriptureRefs ? sermon.scriptureRefs.join(', ') : '');
+    setSermonMarkdown(sermon.markdownContent);
+    setSermonIsPublished(sermon.isPublished);
+    setEditorMode('write');
+
+    // Smooth scroll to composer
+    window.scrollTo({ top: 180, behavior: 'smooth' });
+  };
+
+  // Cancel edit mode
+  const handleCancelEdit = () => {
+    setEditingSermonId(null);
+    setSermonTitle('');
+    setSermonMarkdown('');
+    setSermonScriptureRefs('');
+    setEditorMode('write');
+  };
+
+  // Announcement submit handler
+  const handleCreateAnnouncement = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!announcementTitle.trim() || !announcementContent.trim() || !loggedInStaff) return;
+
+    addAnnouncement({
+      title: announcementTitle.trim(),
+      content: announcementContent.trim(),
+      authorName: loggedInStaff.name,
+      category: announcementCategory,
+      scriptureRef: announcementScriptureRef.trim() || undefined,
+      isPinned: announcementIsPinned,
+      isScheduled: announcementIsScheduled,
+      scheduledAt: announcementIsScheduled ? new Date(announcementScheduledDate).toISOString() : undefined,
+    });
+
+    setAnnouncementTitle('');
+    setAnnouncementContent('');
+    setAnnouncementIsPinned(false);
+    setAnnouncementIsScheduled(false);
+  };
+
+  // -------------------------------------------------------------
+  // IF NOT LOGGED IN: Apple Security Access Screen
+  // -------------------------------------------------------------
   if (!loggedInStaff) {
     return (
-      <div className="max-w-2xl mx-auto p-4 md:p-8 space-y-6 animate-in fade-in duration-300">
-        <div className="text-center space-y-2 pb-4">
-          <div className="w-14 h-14 rounded-2xl bg-stone-900 dark:bg-stone-800 text-amber-400 mx-auto flex items-center justify-center shadow-lg border border-stone-800">
-            <ShieldCheck className="w-8 h-8" />
+      <div className="max-w-md mx-auto px-4 py-8 space-y-6 animate-in fade-in duration-200">
+        <div className="text-center space-y-1.5">
+          <div className="w-14 h-14 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 mx-auto flex items-center justify-center shadow-xs">
+            <ShieldCheck className="w-7 h-7" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-stone-900 dark:text-stone-100">
-            Companion Staff Portal
-          </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto">
-            Authorized pastoral leadership portal for authoring congregation announcements, scheduling broadcasts, and emergency pastoral alerts.
+          <h1 className="text-[24px] font-bold text-[#1C1C1E] dark:text-white">
+            Staff Companion Portal
+          </h1>
+          <p className="text-[13px] text-[#8E8E93]">
+            Pastoral leadership authentication for managing the sermon library and publishing congregation notices.
           </p>
         </div>
 
-        {/* 4 Preset Accounts Selector */}
-        <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 p-6 shadow-sm space-y-4">
-          <h3 className="font-serif font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
-            <Lock className="w-4 h-4 text-amber-600" />
-            <span>Select Preset Staff Account</span>
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {STAFF_ACCOUNTS.map((staff) => (
-              <button
-                key={staff.name}
-                type="button"
-                onClick={() => {
-                  setSelectedStaffName(staff.name);
-                  setPasscode(staff.presetPasscode);
-                }}
-                className={`p-3 rounded-2xl text-left border transition ${
-                  selectedStaffName === staff.name
-                    ? 'border-amber-600 bg-amber-500/10 dark:bg-amber-950/40'
-                    : 'border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-stone-900 dark:text-stone-100">
-                    {staff.name}
-                  </span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-600/10 text-amber-700 dark:text-amber-400 font-bold">
+        <div className="ios-card p-6 space-y-5 border border-black/[0.04] dark:border-white/[0.06]">
+          {/* Quick Staff Selection Chips */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider block">
+              Select Staff Account
+            </label>
+            <div className="space-y-2">
+              {STAFF_ACCOUNTS.map((staff) => (
+                <button
+                  key={staff.name}
+                  type="button"
+                  onClick={() => {
+                    setSelectedStaffName(staff.name);
+                    setPasscode(staff.presetPasscode);
+                    setLoginError('');
+                  }}
+                  className={`w-full p-3 rounded-[12px] flex items-center justify-between text-left transition border ${
+                    selectedStaffName === staff.name
+                      ? 'border-indigo-500 bg-indigo-500/5'
+                      : 'border-black/[0.06] dark:border-white/[0.08] hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-8 h-8 rounded-full ${staff.avatarColor} flex items-center justify-center text-[11px] font-bold`}>
+                      {staff.avatarInitials}
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-semibold text-[#1C1C1E] dark:text-white leading-tight">
+                        {staff.name}
+                      </h4>
+                      <span className="text-[11px] text-[#8E8E93]">{staff.role}</span>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-white">
                     PIN: {staff.presetPasscode}
                   </span>
-                </div>
-                <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
-                  {staff.role}
-                </p>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <form onSubmit={handleLogin} className="pt-4 border-t border-stone-100 dark:border-stone-800 space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4 pt-1">
             <div>
-              <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-                Enter 4-Digit Passcode
+              <label className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider block mb-1.5">
+                4-Digit Staff Passcode
               </label>
-              <input
-                type="password"
-                required
-                maxLength={4}
-                placeholder="4-digit PIN (e.g. 1001)"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                className="w-full px-4 py-2.5 text-center tracking-widest text-lg font-mono font-bold bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-
-            {loginError && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{loginError}</span>
+              <div className="relative">
+                <input
+                  type="password"
+                  maxLength={4}
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  placeholder="••••"
+                  className="w-full text-center tracking-[0.5em] text-[22px] font-mono font-bold py-2 bg-black/[0.04] dark:bg-white/[0.06] rounded-[12px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
               </div>
-            )}
+              {loginError && (
+                <p className="text-[12px] text-red-500 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>{loginError}</span>
+                </p>
+              )}
+            </div>
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition active:scale-95"
+              className="w-full py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 active:scale-98 text-white font-semibold text-[14px] shadow-xs transition"
             >
-              Authenticate & Enter Portal
+              Authenticate Pastoral Access
             </button>
           </form>
         </div>
@@ -188,290 +338,720 @@ export const CompanionPortalScreen: React.FC = () => {
     );
   }
 
-  // IF LOGGED IN: Full Portal
+  // -------------------------------------------------------------
+  // IF LOGGED IN: Staff Management Panel
+  // -------------------------------------------------------------
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-300">
-      {/* Active Staff Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-stone-900 text-stone-100 shadow-xl border border-stone-800">
+    <div className="max-w-3xl mx-auto px-4 py-6 md:py-8 space-y-6 animate-in fade-in duration-200">
+      {/* Authenticated Staff Header Bar */}
+      <div className="ios-card p-4 flex items-center justify-between border border-black/[0.04] dark:border-white/[0.06]">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center font-serif font-bold text-lg shadow-md">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center font-bold text-[13px] shadow-xs">
             {loggedInStaff.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-serif font-bold text-base text-white">
+              <h2 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white">
                 {loggedInStaff.name}
-              </h3>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              </h2>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-400">
                 Staff Verified
               </span>
             </div>
-            <p className="text-xs text-stone-400">
-              {loggedInStaff.role} • {loggedInStaff.email}
+            <p className="text-[12px] text-[#8E8E93]">
+              {loggedInStaff.role}
             </p>
           </div>
         </div>
 
         <button
           onClick={logoutStaff}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white text-xs font-semibold transition border border-stone-700"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] hover:bg-black/[0.08] dark:hover:bg-white/[0.12] text-[12px] font-medium text-[#1C1C1E] dark:text-white transition active:scale-95"
         >
-          <LogOut className="w-3.5 h-3.5" />
+          <LogOut className="w-3.5 h-3.5 text-[#8E8E93]" />
           <span>Sign Out</span>
         </button>
       </div>
 
-      {/* Authoring Composer */}
-      <section className="rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 md:p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-4">
-          <div>
-            <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-stone-100">
-              Author Congregation Announcement
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              Posts appear immediately on the Home screen feed and sync to member devices.
-            </p>
-          </div>
-          <span className="text-xs font-bold text-amber-600 dark:text-amber-400 px-3 py-1 rounded-full bg-amber-500/10">
-            Author: {loggedInStaff.name}
-          </span>
-        </div>
+      {/* Segmented Tab Switch: Sermon Library Composer vs Announcements */}
+      <div className="ios-segmented flex p-1 rounded-[12px] bg-black/[0.05] dark:bg-white/[0.08]">
+        <button
+          onClick={() => setActiveTab('sermons')}
+          className={`flex-1 py-2 rounded-[10px] text-[13px] font-semibold flex items-center justify-center gap-2 transition ${
+            activeTab === 'sermons'
+              ? 'bg-white dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-white shadow-xs'
+              : 'text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Sermon Library Composer ({sermons.length})</span>
+        </button>
 
-        <form onSubmit={handleCreateAnnouncement} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-                Announcement Title
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Sunday Celebration & Communion Service"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold"
-              />
-            </div>
+        <button
+          onClick={() => setActiveTab('announcements')}
+          className={`flex-1 py-2 rounded-[10px] text-[13px] font-semibold flex items-center justify-center gap-2 transition ${
+            activeTab === 'announcements'
+              ? 'bg-white dark:bg-[#2C2C2E] text-[#1C1C1E] dark:text-white shadow-xs'
+              : 'text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white'
+          }`}
+        >
+          <Radio className="w-4 h-4" />
+          <span>Bulletins & Notices ({announcements.length})</span>
+        </button>
+      </div>
 
-            <div>
-              <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-                Ministry Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold"
+      {/* ========================================================= */}
+      {/* TAB 1: SERMON LIBRARY COMPOSER & ARCHIVE                 */}
+      {/* ========================================================= */}
+      {activeTab === 'sermons' && (
+        <div className="space-y-6">
+          {/* Editing Mode Alert Banner */}
+          {editingSermonId && (
+            <div className="p-3.5 rounded-[14px] bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-[13px] font-medium text-amber-900 dark:text-amber-200">
+                  Editing existing sermon: <strong>"{sermonTitle}"</strong>
+                </span>
+              </div>
+              <button
+                onClick={handleCancelEdit}
+                className="text-[12px] font-semibold text-amber-700 dark:text-amber-300 hover:underline"
               >
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+                Cancel Edit
+              </button>
             </div>
-          </div>
+          )}
 
-          <div>
-            <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-              Scripture Reference (Optional)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Philippians 4:6-7 or Psalms 100"
-              value={scriptureRef}
-              onChange={(e) => setScriptureRef(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-              Body Message & Pastoral Instructions
-            </label>
-            <textarea
-              required
-              rows={4}
-              placeholder="Share details of the upcoming service, prayer focus, or meeting times..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500 leading-relaxed font-serif"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-                Call-to-Action Label
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Join Service, RSVP, or Learn More"
-                value={ctaLabel}
-                onChange={(e) => setCtaLabel(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
+          {/* Sermon Composer Form Card */}
+          <div className="ios-card p-6 space-y-5 border border-black/[0.04] dark:border-white/[0.06]">
+            <div className="flex items-center justify-between pb-1 border-b border-black/[0.06] dark:border-white/[0.08]">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-amber-500" />
+                <h3 className="text-[16px] font-semibold text-[#1C1C1E] dark:text-white">
+                  {editingSermonId ? 'Update Sermon Message' : 'Author New Expository Sermon'}
+                </h3>
+              </div>
+              <span className="text-[12px] font-medium text-[#8E8E93]">
+                Offline Drift Storage
+              </span>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-1">
-                Action Link or Screen Target
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. #sanctuary or external URL"
-                value={ctaLink}
-                onChange={(e) => setCtaLink(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-stone-50 dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-          </div>
 
-          {/* Toggles: Pin to top, Scheduling, Auto-Broadcast */}
-          <div className="pt-2 p-4 rounded-2xl bg-stone-50 dark:bg-stone-850 border border-stone-200/80 dark:border-stone-800 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-800 dark:text-stone-200">
+            <form onSubmit={handleSaveSermon} className="space-y-4">
+              {/* 1. Title */}
+              <div>
+                <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                  Sermon Title *
+                </label>
                 <input
-                  type="checkbox"
-                  checked={isPinned}
-                  onChange={(e) => setIsPinned(e.target.checked)}
-                  className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4"
+                  type="text"
+                  required
+                  value={sermonTitle}
+                  onChange={(e) => setSermonTitle(e.target.value)}
+                  placeholder="e.g. Anchored in Unshakable Grace"
+                  className="w-full px-3.5 py-2 text-[14px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
-                <span className="flex items-center gap-1.5">
-                  <Pin className="w-3.5 h-3.5 text-amber-600" />
-                  Pin to Top of Congregation Feed
-                </span>
-              </label>
+              </div>
 
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-800 dark:text-stone-200">
-                <input
-                  type="checkbox"
-                  checked={autoBroadcast}
-                  onChange={(e) => setAutoBroadcast(e.target.checked)}
-                  className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
-                />
-                <span className="flex items-center gap-1.5">
-                  <Radio className="w-3.5 h-3.5 text-indigo-600" />
-                  Broadcast Push Notification Immediately
-                </span>
-              </label>
-            </div>
+              {/* 2. Preacher Dropdown + Add New Pastor Button */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                      Preacher / Pastor *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddPastorModal(true)}
+                      className="text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-0.5"
+                    >
+                      <UserPlus className="w-3 h-3" />
+                      <span>+ Add Pastor</span>
+                    </button>
+                  </div>
+                  <select
+                    value={sermonPastorId}
+                    onChange={(e) => setSermonPastorId(e.target.value)}
+                    className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  >
+                    {pastors.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({p.roleTitle})
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="pt-2 border-t border-stone-200/60 dark:border-stone-750 flex flex-col sm:flex-row sm:items-center gap-3">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-800 dark:text-stone-200">
-                <input
-                  type="checkbox"
-                  checked={isScheduled}
-                  onChange={(e) => setIsScheduled(e.target.checked)}
-                  className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4"
-                />
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-stone-500" />
-                  Schedule Publication for Later Date/Time
-                </span>
-              </label>
+                {/* 3. Theme Dropdown + Add New Tag */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                      Theme Tag *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingNewTheme(!isAddingNewTheme)}
+                      className="text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-0.5"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>{isAddingNewTheme ? 'Select Existing' : '+ New Tag'}</span>
+                    </button>
+                  </div>
 
-              {isScheduled && (
+                  {isAddingNewTheme ? (
+                    <input
+                      type="text"
+                      placeholder="e.g. Holiness, Covenant, Hope"
+                      value={customThemeInput}
+                      onChange={(e) => setCustomThemeInput(e.target.value)}
+                      className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                  ) : (
+                    <select
+                      value={sermonTheme}
+                      onChange={(e) => setSermonTheme(e.target.value)}
+                      className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    >
+                      {allAvailableThemes.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              {/* 4. Sermon Date, Duration & Audio URL */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                    Sermon Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={sermonDate}
+                    onChange={(e) => setSermonDate(e.target.value)}
+                    className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                    Duration (Minutes)
+                  </label>
+                  <input
+                    type="number"
+                    min={5}
+                    max={120}
+                    value={sermonDurationMin}
+                    onChange={(e) => setSermonDurationMin(parseInt(e.target.value, 10) || 30)}
+                    className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                    Audio Recording URL
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. audio-track-key"
+                    value={sermonAudioUrl}
+                    onChange={(e) => setSermonAudioUrl(e.target.value)}
+                    className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+
+              {/* 5. Scripture References Deep-link tag list */}
+              <div>
+                <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                  Scripture References (Comma separated, e.g. Romans 8:28-39, Psalms 23:1-4)
+                </label>
                 <input
-                  type="datetime-local"
-                  value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                  className="px-3 py-1.5 text-xs bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100"
+                  type="text"
+                  placeholder="e.g. Romans 8:28-39, Psalms 23:1-4"
+                  value={sermonScriptureRefs}
+                  onChange={(e) => setSermonScriptureRefs(e.target.value)}
+                  className="w-full px-3.5 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
-              )}
-            </div>
+              </div>
+
+              {/* 6. Markdown Editor with "Write" / "Preview" Tabs */}
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                    Expository Body (Markdown) *
+                  </label>
+
+                  {/* Write vs Preview Toggle Switch */}
+                  <div className="flex rounded-[8px] bg-black/[0.06] dark:bg-white/[0.08] p-0.5 text-[12px]">
+                    <button
+                      type="button"
+                      onClick={() => setEditorMode('write')}
+                      className={`flex items-center gap-1 px-3 py-1 rounded-[6px] font-medium transition ${
+                        editorMode === 'write'
+                          ? 'bg-white dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white shadow-2xs font-semibold'
+                          : 'text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white'
+                      }`}
+                    >
+                      <PenLine className="w-3.5 h-3.5" />
+                      <span>Write</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditorMode('preview')}
+                      className={`flex items-center gap-1 px-3 py-1 rounded-[6px] font-medium transition ${
+                        editorMode === 'preview'
+                          ? 'bg-white dark:bg-[#3A3A3C] text-[#1C1C1E] dark:text-white shadow-2xs font-semibold'
+                          : 'text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white'
+                      }`}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Preview</span>
+                    </button>
+                  </div>
+                </div>
+
+                {editorMode === 'write' ? (
+                  <div>
+                    <textarea
+                      required
+                      rows={9}
+                      value={sermonMarkdown}
+                      onChange={(e) => setSermonMarkdown(e.target.value)}
+                      placeholder="Type sermon notes in Markdown: # Heading, > Scripture Blockquote, * Bullet list, **Bold truths**..."
+                      className="w-full px-3.5 py-2.5 text-[14px] font-mono bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500 leading-relaxed resize-y"
+                    />
+                    <span className="text-[11px] text-[#8E8E93] block mt-1">
+                      Supports Markdown headings, bullet points, blockquotes, bold/italics, and Bible verse tags.
+                    </span>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-[10px] bg-black/[0.02] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] min-h-[220px]">
+                    <div className="sermon-markdown font-reading text-[15px] text-[#1C1C1E] dark:text-[#EBEBF5]">
+                      {sermonMarkdown.trim() ? (
+                        <ReactMarkdown>{sermonMarkdown}</ReactMarkdown>
+                      ) : (
+                        <span className="text-[#8E8E93] italic">
+                          No Markdown notes typed yet. Switch back to "Write" to add content.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 7. Draft vs Published Status Toggle */}
+              <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
+                <div>
+                  <span className="text-[14px] font-medium text-[#1C1C1E] dark:text-white block">
+                    {sermonIsPublished ? 'Publish Live to Congregation' : 'Save as Internal Draft'}
+                  </span>
+                  <span className="text-[11px] text-[#8E8E93]">
+                    {sermonIsPublished
+                      ? 'Visible to all church members in Sermon Library'
+                      : 'Saved in offline database for staff review before publication'}
+                  </span>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sermonIsPublished}
+                    onChange={(e) => setSermonIsPublished(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-[#E5E5EA] dark:bg-[#39393D] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#34C759]"></div>
+                </label>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2">
+                {editingSermonId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="px-4 py-2 rounded-full text-[13px] font-medium text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white transition"
+                  >
+                    Cancel
+                  </button>
+                )}
+
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-[13px] font-semibold shadow-xs transition"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>
+                    {editingSermonId
+                      ? 'Save Sermon Updates'
+                      : sermonIsPublished
+                      ? 'Publish to Sermon Library'
+                      : 'Save Local Draft'}
+                  </span>
+                </button>
+              </div>
+            </form>
           </div>
 
-          <div className="pt-2 flex justify-end">
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition active:scale-95"
-            >
-              <Send className="w-4 h-4" />
-              <span>{isScheduled ? 'Schedule Announcement' : 'Publish to Feed'}</span>
-            </button>
-          </div>
-        </form>
-      </section>
+          {/* List of Existing Sermons to Edit / Delete */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-3">
+              <span className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                Managed Sermons ({sermons.length})
+              </span>
+              <button
+                onClick={() => navigateTo('sermons')}
+                className="text-[12px] font-medium text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+              >
+                <span>Open Library Screen</span>
+                <ExternalLink className="w-3 h-3" />
+              </button>
+            </div>
 
-      {/* Manage Published & Scheduled Feed */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-stone-100">
-              Published & Scheduled Archive ({announcements.length})
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              Monitor, broadcast, or withdraw past announcements.
-            </p>
+            <div className="space-y-2.5">
+              {sermons.map((sermon) => {
+                const pastor = pastors.find((p) => p.id === sermon.pastorId);
+                return (
+                  <div
+                    key={sermon.id}
+                    className="ios-card p-4 border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-3 shadow-xs"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                            sermon.isPublished
+                              ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                              : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                          }`}
+                        >
+                          {sermon.isPublished ? 'Published' : 'Draft'}
+                        </span>
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-white">
+                          {sermon.theme}
+                        </span>
+                        <span className="text-[11px] text-[#8E8E93]">
+                          {sermon.sermonDate}
+                        </span>
+                      </div>
+
+                      <h4 className="text-[15px] font-semibold text-[#1C1C1E] dark:text-white truncate">
+                        {sermon.title}
+                      </h4>
+                      <p className="text-[12px] text-[#8E8E93] truncate">
+                        {pastor?.name || 'Unknown Pastor'} • {Math.round((sermon.durationSec || 1800) / 60)} min
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button
+                        onClick={() => handleStartEditSermon(sermon)}
+                        className="px-3 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] hover:bg-black/[0.08] dark:hover:bg-white/[0.12] text-[#1C1C1E] dark:text-white text-[12px] font-semibold transition active:scale-95 flex items-center gap-1"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Edit</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete "${sermon.title}" from the library?`)) {
+                            deleteSermon(sermon.id);
+                          }
+                        }}
+                        className="w-8 h-8 rounded-full text-[#8E8E93] hover:text-red-500 hover:bg-red-500/10 flex items-center justify-center active:scale-95 transition"
+                        title="Delete Sermon"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="space-y-3">
-          {announcements.map((item) => (
-            <div
-              key={item.id}
-              className="p-5 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-            >
-              <div className="space-y-1.5 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
-                    {item.category}
-                  </span>
-                  {item.isPinned && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-600 text-white flex items-center gap-1">
-                      <Pin className="w-3 h-3" /> Pinned
-                    </span>
-                  )}
-                  {item.isScheduled ? (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300">
-                      Scheduled for {new Date(item.scheduledAt || '').toLocaleDateString()}
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
-                      Published Live
-                    </span>
-                  )}
-                  {item.isBroadcastSent && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
-                      <Radio className="w-3 h-3" /> Broadcast Sent
-                    </span>
+      {/* ========================================================= */}
+      {/* TAB 2: BULLETINS & ANNOUNCEMENTS                         */}
+      {/* ========================================================= */}
+      {activeTab === 'announcements' && (
+        <div className="space-y-6">
+          <div className="space-y-1.5">
+            <span className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider px-3">
+              Publish Notice
+            </span>
+            <div className="ios-card p-5 space-y-4 border border-black/[0.04] dark:border-white/[0.06]">
+              <form onSubmit={handleCreateAnnouncement} className="space-y-4">
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                    Notice Title
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Sunday Communion Service"
+                    value={announcementTitle}
+                    onChange={(e) => setAnnouncementTitle(e.target.value)}
+                    className="w-full px-3.5 py-2 text-[14px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                      Ministry Category
+                    </label>
+                    <select
+                      value={announcementCategory}
+                      onChange={(e) => setAnnouncementCategory(e.target.value as any)}
+                      className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    >
+                      {announcementCategories.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                      Scripture Tag (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Romans 12:1-2"
+                      value={announcementScriptureRef}
+                      onChange={(e) => setAnnouncementScriptureRef(e.target.value)}
+                      className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                    Announcement Details
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="Provide information for the congregation..."
+                    value={announcementContent}
+                    onChange={(e) => setAnnouncementContent(e.target.value)}
+                    className="w-full px-3.5 py-2 text-[14px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:ring-1 focus:ring-amber-500 resize-none leading-relaxed"
+                  />
+                </div>
+
+                <div className="p-3 bg-black/[0.02] dark:bg-white/[0.02] rounded-[12px] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[14px] font-medium text-[#1C1C1E] dark:text-white block">
+                        Pin to Top of Feed
+                      </span>
+                      <span className="text-[11px] text-[#8E8E93]">Keep this notice at the very top of Today view</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={announcementIsPinned}
+                        onChange={(e) => setAnnouncementIsPinned(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-[#E5E5EA] dark:bg-[#39393D] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#34C759]"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[14px] font-medium text-[#1C1C1E] dark:text-white block">
+                        Schedule Publication
+                      </span>
+                      <span className="text-[11px] text-[#8E8E93]">Publish automatically at a future time</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={announcementIsScheduled}
+                        onChange={(e) => setAnnouncementIsScheduled(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-[#E5E5EA] dark:bg-[#39393D] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#34C759]"></div>
+                    </label>
+                  </div>
+
+                  {announcementIsScheduled && (
+                    <div className="pt-1">
+                      <input
+                        type="datetime-local"
+                        value={announcementScheduledDate}
+                        onChange={(e) => setAnnouncementScheduledDate(e.target.value)}
+                        className="px-3 py-1.5 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white"
+                      />
+                    </div>
                   )}
                 </div>
 
-                <h4 className="font-serif font-bold text-base text-stone-900 dark:text-stone-100">
-                  {item.title}
-                </h4>
-
-                <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">
-                  {item.content}
-                </p>
-
-                <p className="text-[11px] text-stone-400">
-                  By {item.authorName} • {new Date(item.publishedAt).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 flex-shrink-0 pt-2 sm:pt-0">
-                <button
-                  onClick={() => broadcastAnnouncement(item.id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow transition"
-                  title="Broadcast notification to congregation"
-                >
-                  <Radio className="w-3.5 h-3.5" />
-                  <span>Broadcast Now</span>
-                </button>
-
-                <button
-                  onClick={() => deleteAnnouncement(item.id)}
-                  className="p-2 text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition"
-                  title="Delete Announcement"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-[13px] font-semibold shadow-xs transition"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>{announcementIsScheduled ? 'Schedule Bulletin' : 'Publish Live'}</span>
+                  </button>
+                </div>
+              </form>
             </div>
-          ))}
+          </div>
+
+          {/* Published Feed Archive */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-3">
+              <span className="text-[12px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                Active Bulletins ({announcements.length})
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
+              {announcements.map((item) => (
+                <div
+                  key={item.id}
+                  className="ios-card p-4 space-y-2 border border-black/[0.04] dark:border-white/[0.06]"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.08] text-[#1C1C1E] dark:text-white">
+                        {item.category}
+                      </span>
+                      {item.isPinned && (
+                        <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
+                          <Pin className="w-3 h-3 fill-current" /> Pinned
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => broadcastAnnouncement(item.id)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 text-[11px] font-semibold active:scale-95 transition"
+                      >
+                        <Radio className="w-3 h-3" />
+                        <span>Broadcast</span>
+                      </button>
+
+                      <button
+                        onClick={() => deleteAnnouncement(item.id)}
+                        className="w-7 h-7 rounded-full text-[#8E8E93] hover:text-red-500 flex items-center justify-center active:scale-95 transition"
+                        title="Delete Announcement"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <h3 className="text-[15px] font-semibold text-[#1C1C1E] dark:text-white">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-[13px] text-[#3C3C43] dark:text-[#EBEBF5]/80 line-clamp-2 leading-relaxed">
+                    {item.content}
+                  </p>
+
+                  <span className="text-[11px] text-[#8E8E93] block pt-1">
+                    Author: {item.authorName} • {new Date(item.publishedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </section>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: ADD NEW PASTOR                                    */}
+      {/* ========================================================= */}
+      {showAddPastorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+          <div className="ios-card w-full max-w-md p-6 space-y-4 border border-black/[0.08] dark:border-white/[0.1] shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[17px] font-bold text-[#1C1C1E] dark:text-white">
+                Add Pastor / Preacher
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddPastorModal(false)}
+                className="w-7 h-7 rounded-full text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNewPastor} className="space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                  Full Name & Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Pastor Marcus Vance"
+                  value={newPastorName}
+                  onChange={(e) => setNewPastorName(e.target.value)}
+                  className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                  Role / Ministry Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Guest Evangelist or Discipleship Pastor"
+                  value={newPastorRole}
+                  onChange={(e) => setNewPastorRole(e.target.value)}
+                  className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider mb-1">
+                  Short Bio
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Brief description of calling and background..."
+                  value={newPastorBio}
+                  onChange={(e) => setNewPastorBio(e.target.value)}
+                  className="w-full px-3 py-2 text-[13px] bg-black/[0.04] dark:bg-white/[0.06] rounded-[10px] text-[#1C1C1E] dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500 resize-none leading-relaxed"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddPastorModal(false)}
+                  className="px-3.5 py-1.5 rounded-full text-[12px] font-medium text-[#8E8E93] hover:text-[#1C1C1E] dark:hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-[13px] shadow-xs active:scale-95 transition"
+                >
+                  Save to Directory
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
